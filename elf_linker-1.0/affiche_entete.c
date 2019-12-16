@@ -2,9 +2,9 @@
 #include <stdio.h>
 #include <elf.h>
 
-Elf64_Ehdr * elf_read_entete(FILE * src){
-  Elf64_Ehdr * header = malloc(sizeof(Elf64_Ehdr));
-  fread(header,1, sizeof(Elf64_Ehdr), src);
+Elf32_Ehdr * elf_read_entete(FILE * src){
+  Elf32_Ehdr * header = malloc(sizeof(Elf32_Ehdr));
+  fread(header,1, sizeof(Elf32_Ehdr), src);
   //Magique
   printf("Magique : %x ",header->e_ident[EI_MAG0]);
   printf("%x ", header->e_ident[EI_MAG1]);
