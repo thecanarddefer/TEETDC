@@ -27,27 +27,27 @@ void printSh_Type(Elf32_Word leMot){
         case  17:   printf("type de la section: Section group \n");break;
         case  18:   printf("type de la section: Extended section indeces \n");break;
         case  19:   printf("type de la section: Number of defined types \n");break;
-        default :   printf("(non Traité)type de la Section: %d",leMot);break;
+        default :   printf("(non Traité)type de la Section: %d \n",leMot);break;
     }
 }
 
 void printFlagz(Elf32_Word leMot){
     switch(leMot){
-        case (1 << 0)   :   printf("Writable");break;
-        case (1 << 1)   :   printf("Occupies memory during execution");break;
-        case (1 << 2)   :   printf("Executable");break;
-        case (1 << 4)   :   printf("Might be merged");break;
-        case (1 << 5)   :   printf("Contains nul-terminated strings");break;
-        case (1 << 6)   :   printf("`sh_info' contains SHT index");break;
-        case (1 << 7)   :   printf("Preserve order after combining");break;
-        case (1 << 8)   :   printf("Non-standard OS specific handling required");break;
-        case (1 << 9)   :   printf("Section is member of a group");break;
-        case (1 << 10)  :   printf("Section hold thread-local data.");break;
-        case (1 << 11)  :   printf("Section with compressed data.");break;
-        case 0x0ff00000 :   printf("OS-specific.");break;
-        case 0xf0000000 :   printf("Processor-specific");break;
-        case (1 << 30)  :   printf("Special ordering requirement(Solaris)"); break;
-        case (1U << 31) :   printf("Section is excluded unless referenced or allocated (Solaris)");break;
+        case (1 << 0)   :   printf("flag: Writable \n");break;
+        case (1 << 1)   :   printf("flag:Occupies memory during execution\n");break;
+        case (1 << 2)   :   printf("flag:Executable\n");break;
+        case (1 << 4)   :   printf("flag:Might be merged\n");break;
+        case (1 << 5)   :   printf("flag:Contains nul-terminated strings\n");break;
+        case (1 << 6)   :   printf("flag:`sh_info' contains SHT index\n");break;
+        case (1 << 7)   :   printf("flag:Preserve order after combining\n");break;
+        case (1 << 8)   :   printf("flag:Non-standard OS specific handling required\n");break;
+        case (1 << 9)   :   printf("flag:Section is member of a group\n");break;
+        case (1 << 10)  :   printf("flag:Section hold thread-local data.\n");break;
+        case (1 << 11)  :   printf("flag:Section with compressed data.\n");break;
+        case 0x0ff00000 :   printf("flag:OS-specific.\n");break;
+        case 0xf0000000 :   printf("flag:Processor-specific\n");break;
+        case (1 << 30)  :   printf("flag:Special ordering requirement(Solaris)\n"); break;
+        case (1U << 31) :   printf("flag:Section is excluded unless referenced or allocated (Solaris)\n");break;
     }
 }
 
