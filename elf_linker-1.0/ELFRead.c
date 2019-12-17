@@ -226,41 +226,48 @@ int findStrTabSym(Elf32_Shdr** sheader, Elf32_Ehdr header){
 
 void printInfoSym(unsigned char info){
   switch(ELF32_ST_BIND(info)){
-    case 0: printf("lien du symbole: LOCAL\n");break;
-    case 1: printf("lien du symbole: GLOBAL\n");break;
-    default:printf("lien du symbole: AUTRE\n");break;
+    case 0: printf("LOCAL");break;
+    case 1: printf("GLOBAL");break;
+    default:printf("AUTRE");break;
   }
+  printf("\t");
   switch(ELF32_ST_TYPE(info)){
-    case 0: printf("Type du symbole: NOTYPE\n");break;
-    case 1: printf("Type du symbole: OBJECT\n");break;
-    case 2: printf("Type du symbole: FUNC\n");break;
-    case 3: printf("Type du symbole: SECTION\n");break;
-    case 4: printf("Type du symbole: FILE\n");break;
-    case 5: printf("Type du symbole: COMMON\n");break;
-    default:printf("Type du symbole: AUTRE\n");break;
+    case 0: printf("NOTYPE");break;
+    case 1: printf("OBJECT");break;
+    case 2: printf("FUNC");break;
+    case 3: printf("SECTION");break;
+    case 4: printf("FILE");break;
+    case 5: printf("COMMON");break;
+    default:printf("AUTRE");break;
   }
-
+  printf("\t");
 }
 
 void readSymTab(FILE * fp, Elf32_Shdr** sheader, int symTabNum,Elf32_Sym ** STable, char * strTab){
     fseek(fp,sheader[symTabNum]->sh_offset,SEEK_SET);
+    printf("Num\t");
+    printf("Nom\t");
+    printf("Valeur\t");
+    printf("Tail\t");
+    printf("Lien\t");
+    printf("Type\t");
+    printf("Ndx\t\n");
     for(int i=0; i<sheader[symTabNum]->sh_size/sizeof(Elf32_Sym);i++){
         STable[i]=(Elf32_Sym*)malloc(sizeof(Elf32_Sym));
         fread(STable[i],1, sizeof(Elf32_Sym), fp);
-        printf("symbole n°%d \n",i);
-        printf("nom du symbole :");
+        printf("%d\t",i);
         int j = STable[i]->st_name;
         while(strTab[j] != '\0'){
           printf("%c", strTab[j]);
           j++;
         }
         //getNameSymbole(fp, sheader, STable[i]->st_name);
-        printf("\nvaleur du symbole : 0x%X\n",STable[i]->st_value);
-        printf("taille du symbole : %d\n",STable[i]->st_size);
+        printf("\t0x%X\t",STable[i]->st_value);
+        printf("%d\t",STable[i]->st_size);
         printInfoSym(STable[i]->st_info);
         //printf("autre du symbole : %d\n",STable[i]->st_other);
-        if(STable[i]->st_shndx == 0) printf("shndx du symbole : UND");
-        else printf("shndx du symbole : %d\n",STable[i]->st_shndx);
+        if(STable[i]->st_shndx == 0) printf("UND");
+        else printf(" %d",STable[i]->st_shndx);
         printf("\n");
     }
 }
