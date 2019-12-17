@@ -244,6 +244,122 @@ void affichage_contenu_section (int num,Elf32_Ehdr header,Elf32_Shdr** sheader ,
  
 }
 
+
+////////////////// Partie 5 ////////////////////
+   void afficherInfosRel(Elf32_Word leMot){
+        printf("Index de la table des symboles : %d\n",ELF32_R_SYM(leMot));
+        printf("Type de relocation a appliquer : %d\n",ELF32_R_TYPE(leMot));
+        printf("Info %x\n",leMot);
+    }
+
+ 
+
+void  afficherRelTables(Elf32_Rel ** relTable, Elf32_Ehdr header){
+            int j=0;
+            while (j<header.e_shnum && relTable[j]->r_info!=0 ){
+            
+            //Elf32_Addr r_offset
+            printf("Relocation numéro : %d",j);
+            printf("\tOffset : %x\n",relTable[j]->r_offset);
+            //Elf32_word r_info
+            //printf("\tinfo : %d\n",laTable->relTable[i].r_info);
+            afficherInfosRel(relTable[j]->r_info);
+            j++;}
+        
+    }
+
+
+void  afficherRelaTables(Elf32_Rela ** relaTable, Elf32_Ehdr header){
+            int j=0;
+            while (j<header.e_shnum && relaTable[j]->r_info!=0 ){
+            
+            //Elf32_Addr r_offset
+            printf("Relocation numéro : %d",j);
+            printf("\tOffset : %x\n",relaTable[j]->r_offset);
+            //Elf32_word r_info
+            //printf("\tinfo : %d\n",laTable->relTable[i].r_info);
+            afficherInfosRel(relaTable[j]->r_info);
+            j++;}
+        
+    }
+
+void getRelTable (FILE * fp, Elf32_Ehdr header, Elf32_Shdr ** sheader){
+  
+    int compteurRel=0 ,compteurRela=0;
+    for(int i=0;i<header.e_shnum;i++){
+        switch (sheader[i]->sh_type){
+            case 9 : compteurRel++;break;
+            case 4 : compteurRela++;break;
+            default: break;
+        }
+    }
+    printf("compteurs : %d %d \n",compteurRel,compteurRela);
+    Elf32_Rel * relTable[compteurRel][header.e_shnum];
+    Elf32_Rela * relaTable[compteurRela][header.e_shnum];
+
+    for(int i=0;i<compteurRel;i++){
+        for (int j=0;j<header.e_shnum;j++){
+            relTable[i][j] = (Elf32_Rel*)malloc(sizeof(Elf32_Rel));
+            }
+    }
+
+    for(int i=0;i<compteurRela;i++){
+        for (int j=0;j<header.e_shnum;j++){
+            relaTable[i][j] = (Elf32_Rela*)malloc(sizeof(Elf32_Rela));
+            }
+    }
+
+
+    compteurRel=0;
+    compteurRela = 0;
+
+    for(int i=0;i<header.e_shnum;i++){
+        switch (sheader[i]->sh_type){
+            case 9 :
+                fseek(fp,sheader[i]->sh_offset,SEEK_SET);
+                int j=0;
+                while (ftell(fp)<(sheader[i]->sh_offset+sheader[i]->sh_size)){
+                    fread(relTable[compteurRel][j], 1,sizeof(Elf32_Rel),fp);
+                    j++;
+                    }
+                while (j<header.e_shnum){
+                    //free(relTable[i][j]);
+                    relTable[i][j]=NULL;
+                    j++;}
+                compteurRel++;
+                break;
+            
+            case 4 : 
+                fseek(fp,sheader[i]->sh_offset,SEEK_SET);
+                while (ftell(fp)<(sheader[i]->sh_offset+sheader[i]->sh_size)){
+                    fread(relaTable[compteurRela][j], 1,sizeof(Elf32_Rela),fp);
+                    j++;
+                    }
+                while (j<header.e_shnum){
+                    //free(relaTable[i][j]);
+                    relaTable[i][j]=NULL;
+                    j++;}
+                compteurRela++;
+                break;
+
+            default: 
+                break;
+        }
+    }
+    for (int i=0;i<compteurRel;i++){
+        printf(" \n");
+        printf("table des relocation %d\n",i);
+        printf(" \n");
+        afficherRelTables( relTable[i],header);}
+    for (int i=0;i<compteurRela;i++){
+        printf(" \n");
+        printf("table des relocation avec addent %d\n",i);
+        printf(" \n");
+        afficherRelaTables( relaTable[i],header);}
+}
+
+////////////////////////////////////////////////
+
 void printInfoSym(unsigned char info){
   switch(ELF32_ST_BIND(info)){
     case 0: printf("LOCAL");break;
@@ -329,8 +445,10 @@ int main(int argc, char *argv[]){
         readSymTab(src, sheader, symTabNum, STable, strTab);
       }else{
         printf("il n'y a pas de table des symboles \n");
+
       }
-  	} else {
+  	  getRelTable(src,*header,sheader);
+    } else {
    		printf("bad file");
   	}
 
