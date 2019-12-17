@@ -27,7 +27,7 @@ void printSh_Type(Elf32_Word leMot){
         case  17:   printf("type de la section: Section group \n");break;
         case  18:   printf("type de la section: Extended section indeces \n");break;
         case  19:   printf("type de la section: Number of defined types \n");break;
-        default :   printf("(non Traité)type de la Section: %d",leMot);break;
+        default :   printf("(non Traité)type de la Section: %X\n",leMot);break;
     }
 }
 
