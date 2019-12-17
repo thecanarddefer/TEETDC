@@ -189,40 +189,23 @@ Elf32_Ehdr * elf_read_entete(FILE * src){
   return header;
 }
 
-int indice_section(char nom,Elf32_Ehdr header,Elf32_Shdr *sheader){
-	int i=0;
-	while ((nom != sheader[i].sh_name)&&(i< header.e_shnum)){
-		i++;
-	}
-	if (nom == sheader[i].sh_name){
-		return i;
-	}
-	else {
-		return-1;
-	}
+int indice_section(Elf32_Word nom,Elf32_Ehdr header,Elf32_Shdr **sheader){
+    int i=0;
+    while ((nom!=sheader[i]->sh_name)&&(i< header.e_shnum)){
+        i++;
+    }
+    if ( nom==sheader[i]->sh_name){
+        i++;
+        return i;
+    }
+    else {
+        return-1;
+    }
 }
 
 
 
-void affichage_contenu_section (int num,Elf32_Ehdr header,Elf32_Shdr** sheader , FILE * f){
-	num--;
-	if ((num >= header.e_shnum)||(num <0)){
-		printf("erreur section inexistante \n");
-	}
-	else {
-		if (sheader[num]->sh_size==0){
-			printf("section vide\n");
-			printf("\n");}
-		else {
-		uint8_t contenu[sheader[num]->sh_size];
-		fseek(f,sheader[num]->sh_offset,SEEK_SET);
-		fread(contenu, 1,sheader[num]->sh_size, f);
-		for (int i=0; i<sheader[num]->sh_size; i++){
-			printf("%02X ",contenu[i]);
-		}
-		printf("\n");}
-	}
-}
+
 int findSymTab(Elf32_Shdr** sheader, int max){
     int num=0;
     while(sheader[num]->sh_type!=2 && num< max){
@@ -237,7 +220,29 @@ int findStrTabSym(Elf32_Shdr** sheader, Elf32_Ehdr header){
     }
     return num;
 }
-
+void affichage_contenu_section (int num,Elf32_Ehdr header,Elf32_Shdr** sheader , FILE * f){
+    printf("section %d \n",num);
+    num--;
+    if ((num >= header.e_shnum)||(num <0)){
+        printf("erreur section inexistante \n");
+        printf("\n");
+    }
+    else {
+        if (sheader[num]->sh_size==0){
+            printf("section vide\n");
+            printf("\n");}
+        else {
+        uint8_t contenu[sheader[num]->sh_size];
+        fseek(f,sheader[num]->sh_offset,SEEK_SET);
+        fread(contenu, 1,sheader[num]->sh_size, f);
+        for (int i=0; i<sheader[num]->sh_size; i++){
+            printf("%02X ",contenu[i]);
+        }
+        printf("\n");
+        printf("\n");}
+    }
+ 
+}
 
 void printInfoSym(unsigned char info){
   switch(ELF32_ST_BIND(info)){
