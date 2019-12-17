@@ -208,9 +208,9 @@ void affichage_contenu_section (int num,Elf32_Ehdr header,Elf32_Shdr** sheader ,
 		printf("\n");}
 	}
 }
-int findSymTab(Elf32_Shdr** sheader){
+int findSymTab(Elf32_Shdr** sheader, int max){
     int num=0;
-    while(sheader[num]->sh_type!=2){
+    while(sheader[num]->sh_type!=2 && num< max){
         num++;
     }
     return num;
@@ -279,34 +279,38 @@ int main(int argc, char *argv[]){
   	}
   	FILE * src = fopen(argv[1], "r");
   	if(src){
-		Elf32_Ehdr * header;
-		printf("\n");
-		printf(" /// HEADER ELF /// \n");
-		printf("\n");
-    		header = elf_read_entete(src);
-		Elf32_Shdr *sheader[header->e_shnum];
-		printf("\n");
-		printf(" /// section HEADER TABLE /// \n");
-		printf("\n");
-    
-		afficherTableSectionHeader(src,*header,sheader);
-		printf("\n");
-		printf(" /// section ELF /// \n");
-		printf("\n");
-		for (int i=0; i<10;i++){
-			printf("section %d \n",i);
-			affichage_contenu_section(i,*header,sheader,src);
-    }
-    printf("\n");
-		printf(" /// Affichage des symboles /// \n");
-		printf("\n");
-    int symTabNum=findSymTab(sheader);
-    int numSec = findStrTabSym(sheader,*header);
-    //char strTab[sheader[numSec]->sh_size/sizeof(char)] = createStrTab(sheader, src, numSec);
-    char* strTab = malloc(sheader[numSec]->sh_size); 
-    strTab = createStrTab(sheader, src, numSec);
-    Elf32_Sym * STable[sheader[symTabNum]->sh_size/sizeof(Elf32_Sym)];
-    readSymTab(src, sheader, symTabNum, STable, strTab);
+      Elf32_Ehdr * header;
+      printf("\n");
+      printf(" /// HEADER ELF /// \n");
+      printf("\n");
+          header = elf_read_entete(src);
+      Elf32_Shdr *sheader[header->e_shnum];
+      printf("\n");
+      printf(" /// section HEADER TABLE /// \n");
+      printf("\n");
+      
+      afficherTableSectionHeader(src,*header,sheader);
+      printf("\n");
+      printf(" /// section ELF /// \n");
+      printf("\n");
+      for (int i=0; i<10;i++){
+        printf("section %d \n",i);
+        affichage_contenu_section(i,*header,sheader,src);
+      }
+      printf("\n");
+      printf(" /// Affichage des symboles /// \n");
+      printf("\n");
+      int symTabNum=findSymTab(sheader,header->e_shnum);
+      if(symTabNum < header->e_shnum){
+        int numSec = findStrTabSym(sheader,*header);
+        //char strTab[sheader[numSec]->sh_size/sizeof(char)] = createStrTab(sheader, src, numSec);
+        char* strTab = malloc(sheader[numSec]->sh_size); 
+        strTab = createStrTab(sheader, src, numSec);
+        Elf32_Sym * STable[sheader[symTabNum]->sh_size/sizeof(Elf32_Sym)];
+        readSymTab(src, sheader, symTabNum, STable, strTab);
+      }else{
+        printf("il n'y a pas de table des symboles \n");
+      }
   	} else {
    		printf("bad file");
   	}
