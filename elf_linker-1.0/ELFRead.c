@@ -33,33 +33,47 @@ void printSh_Type(Elf32_Word leMot){
 
 void printFlagz(Elf32_Word leMot){
     switch(leMot){
-        case (1 << 0)   :   printf("Writable");break;
-        case (1 << 1)   :   printf("Occupies memory during execution");break;
-        case (1 << 2)   :   printf("Executable");break;
-        case (1 << 4)   :   printf("Might be merged");break;
-        case (1 << 5)   :   printf("Contains nul-terminated strings");break;
-        case (1 << 6)   :   printf("`sh_info' contains SHT index");break;
-        case (1 << 7)   :   printf("Preserve order after combining");break;
-        case (1 << 8)   :   printf("Non-standard OS specific handling required");break;
-        case (1 << 9)   :   printf("Section is member of a group");break;
-        case (1 << 10)  :   printf("Section hold thread-local data.");break;
-        case (1 << 11)  :   printf("Section with compressed data.");break;
-        case 0x0ff00000 :   printf("OS-specific.");break;
-        case 0xf0000000 :   printf("Processor-specific");break;
-        case (1 << 30)  :   printf("Special ordering requirement(Solaris)"); break;
-        case (1U << 31) :   printf("Section is excluded unless referenced or allocated (Solaris)");break;
+        case 1 << 0   :   printf("Writable\n");break;
+        case 1 << 1   :   printf("Occupies memory during execution\n");break;
+        case 1 << 2   :   printf("Executable\n");break;
+        case 1 << 4  :   printf("Might be merged\n");break;
+        case 1 << 5   :   printf("Contains nul-terminated strings\n");break;
+        case 1 << 6   :   printf("`sh_info' contains SHT index\n");break;
+        case 1 << 7   :   printf("Preserve order after combining\n");break;
+        case 1 << 8   :   printf("Non-standard OS specific handling required\n");break;
+        case 1 << 9  :   printf("Section is member of a group\n");break;
+        case 1 << 10  :   printf("Section hold thread-local data.\n");break;
+        case 1 << 11  :   printf("Section with compressed data.\n");break;
+        case 0x0ff00000 :   printf("OS-specific.\n");break;
+        case 0xf0000000 :   printf("Processor-specific\n");break;
+        case 1 << 30  :   printf("Special ordering requirement(Solaris)\n"); break;
+        case 1U << 31 :   printf("Section is excluded unless referenced or allocated (Solaris)\n");break;
+        default: printf("valeur de flag : %d \n",leMot);
     }
 }
-
+char * createStrTab(Elf32_Shdr** sheader, FILE * fp, int num){
+    char * strTab = malloc(sheader[num]->sh_size);
+    fseek(fp,sheader[num]->sh_offset,SEEK_SET);
+    fread(strTab, sheader[num]->sh_size/sizeof(char), sizeof(char), fp);
+    return strTab;
+}
 void afficherTableSectionHeader(FILE * fp, Elf32_Ehdr header, Elf32_Shdr ** sheader){
     fseek(fp,header.e_shoff,SEEK_SET);
     for(int i=0;i<header.e_shnum;i++){
         sheader[i]=(Elf32_Shdr*)malloc(sizeof(Elf32_Shdr));
         fread(sheader[i],1, sizeof(Elf32_Shdr), fp);
     }
+    char* strTabSection = malloc(sheader[header.e_shstrndx]->sh_size); 
+    strTabSection = createStrTab(sheader, fp, header.e_shstrndx);
     for(int i=0;i<header.e_shnum;i++){
         printf("numero de la section: %d \n",i+1);
-        printf("nom de la section: %d \n",sheader[i]->sh_name);
+        printf("nom de la section:  ");
+        int j = sheader[i]->sh_name;
+        while(strTabSection[j] != '\0'){
+          printf("%c", strTabSection[j]);
+          j++;
+        }
+        printf("\n");
         printSh_Type(sheader[i]->sh_type);
         printFlagz(sheader[i]->sh_flags);
         printf("@ virtuel pendant exec de la section: %d \n",sheader[i]->sh_addr);
@@ -194,7 +208,62 @@ void affichage_contenu_section (int num,Elf32_Ehdr header,Elf32_Shdr** sheader ,
 		printf("\n");}
 	}
 }
+int findSymTab(Elf32_Shdr** sheader){
+    int num=0;
+    while(sheader[num]->sh_type!=2){
+        num++;
+    }
+    return num;
+}
+int findStrTabSym(Elf32_Shdr** sheader, Elf32_Ehdr header){
+    int num=0;
+    while(sheader[num]->sh_type!=3 || num==header.e_shstrndx){
+        num++;
+    }
+    return num;
+}
 
+
+void printInfoSym(unsigned char info){
+  switch(ELF32_ST_BIND(info)){
+    case 0: printf("lien du symbole: LOCAL\n");break;
+    case 1: printf("lien du symbole: GLOBAL\n");break;
+    default:printf("lien du symbole: AUTRE\n");break;
+  }
+  switch(ELF32_ST_TYPE(info)){
+    case 0: printf("Type du symbole: NOTYPE\n");break;
+    case 1: printf("Type du symbole: OBJECT\n");break;
+    case 2: printf("Type du symbole: FUNC\n");break;
+    case 3: printf("Type du symbole: SECTION\n");break;
+    case 4: printf("Type du symbole: FILE\n");break;
+    case 5: printf("Type du symbole: COMMON\n");break;
+    default:printf("Type du symbole: AUTRE\n");break;
+  }
+
+}
+
+void readSymTab(FILE * fp, Elf32_Shdr** sheader, int symTabNum,Elf32_Sym ** STable, char * strTab){
+    fseek(fp,sheader[symTabNum]->sh_offset,SEEK_SET);
+    for(int i=0; i<sheader[symTabNum]->sh_size/sizeof(Elf32_Sym);i++){
+        STable[i]=(Elf32_Sym*)malloc(sizeof(Elf32_Sym));
+        fread(STable[i],1, sizeof(Elf32_Sym), fp);
+        printf("symbole n°%d \n",i);
+        printf("nom du symbole :");
+        int j = STable[i]->st_name;
+        while(strTab[j] != '\0'){
+          printf("%c", strTab[j]);
+          j++;
+        }
+        //getNameSymbole(fp, sheader, STable[i]->st_name);
+        printf("\nvaleur du symbole : 0x%X\n",STable[i]->st_value);
+        printf("taille du symbole : %d\n",STable[i]->st_size);
+        printInfoSym(STable[i]->st_info);
+        //printf("autre du symbole : %d\n",STable[i]->st_other);
+        if(STable[i]->st_shndx == 0) printf("shndx du symbole : UND");
+        else printf("shndx du symbole : %d\n",STable[i]->st_shndx);
+        printf("\n");
+    }
+}
 	
 int main(int argc, char *argv[]){
 	if(argc != 2){
@@ -212,15 +281,28 @@ int main(int argc, char *argv[]){
 		printf("\n");
 		printf(" /// section HEADER TABLE /// \n");
 		printf("\n");
+    
 		afficherTableSectionHeader(src,*header,sheader);
 		printf("\n");
 		printf(" /// section ELF /// \n");
 		printf("\n");
 		for (int i=0; i<10;i++){
 			printf("section %d \n",i);
-			affichage_contenu_section(i,*header,sheader,src);}
-		
+			affichage_contenu_section(i,*header,sheader,src);
+    }
+    printf("\n");
+		printf(" /// Affichage des symboles /// \n");
+		printf("\n");
+    int symTabNum=findSymTab(sheader);
+    int numSec = findStrTabSym(sheader,*header);
+    //char strTab[sheader[numSec]->sh_size/sizeof(char)] = createStrTab(sheader, src, numSec);
+    char* strTab = malloc(sheader[numSec]->sh_size); 
+    strTab = createStrTab(sheader, src, numSec);
+    Elf32_Sym * STable[sheader[symTabNum]->sh_size/sizeof(Elf32_Sym)];
+    readSymTab(src, sheader, symTabNum, STable, strTab);
   	} else {
    		printf("bad file");
   	}
+    
+
 }
