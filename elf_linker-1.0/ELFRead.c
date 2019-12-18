@@ -4,101 +4,72 @@
 
 
 // if latabledessections est vide : e_shnum = 0
-// sinon :
-// e_shentsize * e_shnum = Taille de la table des sections
-// e_shoff : pour pouvoir se positionner ou bon nous semble
+// sinon : 
+// e_shentsize * e_shnum = Taille de la table des sections 
+// e_shoff : pour pouvoir se positionner ou bon nous semble 
 void printSh_Type(Elf32_Word leMot){
     switch(leMot){
-        case  0 :   printf("Section header table entry unused ");break;
-        case  1 :   printf("Program data                      ");break;
-        case  2 :   printf("Symbol table                      ");break;
-        case  3 :   printf("String table                      ");break;
-        case  4 :   printf("Relocation entries with addends   ");break;
-        case  5 :   printf("Symbol hash table                 ");break;
-        case  6 :   printf("Dynamic linking information       ");break;
-        case  7 :   printf("Notes                             ");break;
-        case  8 :   printf("Program space with no data (bss)  ");break;
-        case  9 :   printf("Relocation entries, no addends    ");break;
-        case  10:   printf("Reserved                          ");break;
-        case  11:   printf("Dynamic linker symbol table       ");break;
-        case  14:   printf("Array of constructors             ");break;
-        case  15:   printf("Array of destructors              ");break;
-        case  16:   printf("Array of pre-constructors         ");break;
-        case  17:   printf("Section group                     ");break;
-        case  18:   printf("Extended section indeces          ");break;
-        case  19:   printf("Number of defined types           ");break;
-        default :   printf("Non traité : %X             ",leMot);break;
-        printf("\t");
+        case  0 :   printf("type de la section: Section header table entry unused \n");break;
+        case  1 :   printf("type de la section: Program data\n");break;
+        case  2 :   printf("type de la section: Symbol table\n");break;
+        case  3 :   printf("type de la section: String table\n");break;
+        case  4 :   printf("type de la section: Relocation entries with addends \n");break;
+        case  5 :   printf("type de la section: Symbol hash table \n");break;
+        case  6 :   printf("type de la section: Dynamic linking information \n");break;
+        case  7 :   printf("type de la section: Notes \n");break;
+        case  8 :   printf("type de la section: Program space with no data (bss) \n");break;
+        case  9 :   printf("type de la section: Relocation entries, no addends \n");break;
+        case  10:   printf("type de la section: Reserved \n");break;
+        case  11:   printf("type de la section: Dynamic linker symbol table \n");break;
+        case  14:   printf("type de la section: Array of constructors \n");break;
+        case  15:   printf("type de la section: Array of destructors \n");break;
+        case  16:   printf("type de la section: Array of pre-constructors \n");break;
+        case  17:   printf("type de la section: Section group \n");break;
+        case  18:   printf("type de la section: Extended section indeces \n");break;
+        case  19:   printf("type de la section: Number of defined types \n");break;
+        default :   printf("(non Traité)type de la Section: %d",leMot);break;
     }
 }
 
 void printFlagz(Elf32_Word leMot){
     switch(leMot){
-        case 1 << 0     :   printf("Writable                                  ");break;
-        case 1 << 1     :   printf("Occupies memory during execution          ");break;
-        case 1 << 2     :   printf("Executable                                ");break;
-        case 1 << 4     :   printf("Might be merged                           ");break;
-        case 1 << 5     :   printf("Contains nul-terminated strings           ");break;
-        case 1 << 6     :   printf("`sh_info' contains SHT index              ");break;
-        case 1 << 7     :   printf("Preserve order after combining            ");break;
-        case 1 << 8     :   printf("Non-standard OS specific handling required");break;
-        case 1 << 9     :   printf("Section is member of a group              ");break;
-        case 1 << 10    :   printf("Section hold thread-local data.           ");break;
-        case 1 << 11    :   printf("Section with compressed data.             ");break;
-        case 0x0ff00000 :   printf("OS-specific.                              ");break;
-        case 0xf0000000 :   printf("Processor-specific                        ");break;
-        default: printf("%d                                                ",leMot);
-        printf("\t");
+        case (1 << 0)   :   printf("Writable");break;
+        case (1 << 1)   :   printf("Occupies memory during execution");break;
+        case (1 << 2)   :   printf("Executable");break;
+        case (1 << 4)   :   printf("Might be merged");break;
+        case (1 << 5)   :   printf("Contains nul-terminated strings");break;
+        case (1 << 6)   :   printf("`sh_info' contains SHT index");break;
+        case (1 << 7)   :   printf("Preserve order after combining");break;
+        case (1 << 8)   :   printf("Non-standard OS specific handling required");break;
+        case (1 << 9)   :   printf("Section is member of a group");break;
+        case (1 << 10)  :   printf("Section hold thread-local data.");break;
+        case (1 << 11)  :   printf("Section with compressed data.");break;
+        case 0x0ff00000 :   printf("OS-specific.");break;
+        case 0xf0000000 :   printf("Processor-specific");break;
+        case (1 << 30)  :   printf("Special ordering requirement(Solaris)"); break;
+        case (1U << 31) :   printf("Section is excluded unless referenced or allocated (Solaris)");break;
     }
 }
-char * createStrTab(Elf32_Shdr** sheader, FILE * fp, int num){
-    char * strTab = malloc(sheader[num]->sh_size);
-    fseek(fp,sheader[num]->sh_offset,SEEK_SET);
-    fread(strTab, sheader[num]->sh_size/sizeof(char), sizeof(char), fp);
-    return strTab;
-}
+
 void afficherTableSectionHeader(FILE * fp, Elf32_Ehdr header, Elf32_Shdr ** sheader){
-    printf("Num\t");
-    printf("Nom\t\t\t");
-    printf("Type\t\t\t\t");
-    printf("@virt\t");
-    printf("Off\t");
-    printf("Tail\t");
-    printf("Link\t");
-    printf("Info\t");
-    printf("Align\t");
-    printf("TailTab\t");
-    printf("Flag\n");
     fseek(fp,header.e_shoff,SEEK_SET);
     for(int i=0;i<header.e_shnum;i++){
         sheader[i]=(Elf32_Shdr*)malloc(sizeof(Elf32_Shdr));
         fread(sheader[i],1, sizeof(Elf32_Shdr), fp);
     }
-    char* strTabSection = malloc(sheader[header.e_shstrndx]->sh_size);
-    strTabSection = createStrTab(sheader, fp, header.e_shstrndx);
     for(int i=0;i<header.e_shnum;i++){
-        printf("%d \t",i+1);
-        int j = sheader[i]->sh_name;
-        while(strTabSection[j] != '\0'){
-          printf("%c", strTabSection[j]);
-          j++;
-        }
-        while(j<sheader[i]->sh_name+20){
-          printf(" ");
-          j++;
-        }
-        printf("\t");
+        printf("numero de la section: %d \n",i+1);
+        printf("nom de la section: %d \n",sheader[i]->sh_name);
         printSh_Type(sheader[i]->sh_type);
-        printf("%d \t",sheader[i]->sh_addr);
-        printf("%X \t",sheader[i]->sh_offset);
-        printf("%d \t",sheader[i]->sh_size);
-        printf("%d \t",sheader[i]->sh_link);
-        printf("%d \t",sheader[i]->sh_info);
-        printf("%d \t",sheader[i]->sh_addralign);
-        printf("%d \t",sheader[i]->sh_entsize);
         printFlagz(sheader[i]->sh_flags);
-        
-	      printf("\n");
+        printf("@ virtuel pendant exec de la section: %d \n",sheader[i]->sh_addr);
+        printf("offset de la section: %d \n",sheader[i]->sh_offset);
+        printf("taille de la section: %d \n",sheader[i]->sh_size);
+        printf("link vers autre section: %d \n",sheader[i]->sh_link);
+        printf("informations de la section: %d \n",sheader[i]->sh_info);
+        printf("allignement de l'@ de la section: %d \n",sheader[i]->sh_addralign);
+        printf("taille de la section si elle a une table: %d \n",sheader[i]->sh_entsize);
+	printf("\n");
     }
     return ;
 }
@@ -189,224 +160,42 @@ Elf32_Ehdr * elf_read_entete(FILE * src){
   return header;
 }
 
-int indice_section(Elf32_Word nom,Elf32_Ehdr header,Elf32_Shdr **sheader){
-    int i=0;
-    while ((nom!=sheader[i]->sh_name)&&(i< header.e_shnum)){
-        i++;
-    }
-    if ( nom==sheader[i]->sh_name){
-        i++;
-        return i;
-    }
-    else {
-        return-1;
-    }
+int indice_section(char nom,Elf32_Ehdr header,Elf32_Shdr *sheader){
+	int i=0;	
+	while ((nom != sheader[i].sh_name)&&(i< header.e_shnum)){
+		i++;
+	}
+	if (nom == sheader[i].sh_name){
+		return i;
+	}
+	else {
+		return-1;
+	}
 }
 
 
 
-
-int findSymTab(Elf32_Shdr** sheader, int max){
-    int num=0;
-    while(sheader[num]->sh_type!=2 && num< max){
-        num++;
-    }
-    return num;
-}
-int findStrTabSym(Elf32_Shdr** sheader, Elf32_Ehdr header){
-    int num=0;
-    while(sheader[num]->sh_type!=3 || num==header.e_shstrndx){
-        num++;
-    }
-    return num;
-}
 void affichage_contenu_section (int num,Elf32_Ehdr header,Elf32_Shdr** sheader , FILE * f){
-    printf("section %d \n",num);
-    num--;
-    if ((num >= header.e_shnum)||(num <0)){
-        printf("erreur section inexistante \n");
-        printf("\n");
-    }
-    else {
-        if (sheader[num]->sh_size==0){
-            printf("section vide\n");
-            printf("\n");}
-        else {
-        uint8_t contenu[sheader[num]->sh_size];
-        fseek(f,sheader[num]->sh_offset,SEEK_SET);
-        fread(contenu, 1,sheader[num]->sh_size, f);
-        for (int i=0; i<sheader[num]->sh_size; i++){
-            printf("%02X ",contenu[i]);
-        }
-        printf("\n");
-        printf("\n");}
-    }
- 
+	num--;
+	if ((num >= header.e_shnum)||(num <0)){
+		printf("erreur section inexistante \n");
+	}
+	else {
+		if (sheader[num]->sh_size==0){
+			printf("section vide\n");
+			printf("\n");}
+		else {
+		uint8_t contenu[sheader[num]->sh_size];
+		fseek(f,sheader[num]->sh_offset,SEEK_SET);
+		fread(contenu, 1,sheader[num]->sh_size, f);
+		for (int i=0; i<sheader[num]->sh_size; i++){
+			printf("%02X ",contenu[i]);
+		}
+		printf("\n");}
+	}
 }
 
-
-////////////////// Partie 5 ////////////////////
-   void afficherInfosRel(Elf32_Word leMot){
-        printf("Index de la table des symboles : %d\n",ELF32_R_SYM(leMot));
-        printf("Type de relocation a appliquer : %d\n",ELF32_R_TYPE(leMot));
-        printf("Info %x\n",leMot);
-    }
-
- 
-
-void  afficherRelTables(Elf32_Rel ** relTable, Elf32_Ehdr header){
-            int j=0;
-            while (j<header.e_shnum && relTable[j]->r_info!=0 ){
-            
-            //Elf32_Addr r_offset
-            printf("Relocation numéro : %d",j);
-            printf("\tOffset : %x\n",relTable[j]->r_offset);
-            //Elf32_word r_info
-            //printf("\tinfo : %d\n",laTable->relTable[i].r_info);
-            afficherInfosRel(relTable[j]->r_info);
-            j++;}
-        
-    }
-
-
-void  afficherRelaTables(Elf32_Rela ** relaTable, Elf32_Ehdr header){
-            int j=0;
-            while (j<header.e_shnum && relaTable[j]->r_info!=0 ){
-            
-            //Elf32_Addr r_offset
-            printf("Relocation numéro : %d",j);
-            printf("\tOffset : %x\n",relaTable[j]->r_offset);
-            //Elf32_word r_info
-            //printf("\tinfo : %d\n",laTable->relTable[i].r_info);
-            afficherInfosRel(relaTable[j]->r_info);
-            j++;}
-        
-    }
-
-void getRelTable (FILE * fp, Elf32_Ehdr header, Elf32_Shdr ** sheader){
-  
-    int compteurRel=0 ,compteurRela=0;
-    for(int i=0;i<header.e_shnum;i++){
-        switch (sheader[i]->sh_type){
-            case 9 : compteurRel++;break;
-            case 4 : compteurRela++;break;
-            default: break;
-        }
-    }
-    printf("compteurs : %d %d \n",compteurRel,compteurRela);
-    Elf32_Rel * relTable[compteurRel][header.e_shnum];
-    Elf32_Rela * relaTable[compteurRela][header.e_shnum];
-
-    for(int i=0;i<compteurRel;i++){
-        for (int j=0;j<header.e_shnum;j++){
-            relTable[i][j] = (Elf32_Rel*)malloc(sizeof(Elf32_Rel));
-            }
-    }
-
-    for(int i=0;i<compteurRela;i++){
-        for (int j=0;j<header.e_shnum;j++){
-            relaTable[i][j] = (Elf32_Rela*)malloc(sizeof(Elf32_Rela));
-            }
-    }
-
-
-    compteurRel=0;
-    compteurRela = 0;
-
-    for(int i=0;i<header.e_shnum;i++){
-        switch (sheader[i]->sh_type){
-            case 9 :
-                fseek(fp,sheader[i]->sh_offset,SEEK_SET);
-                int j=0;
-                while (ftell(fp)<(sheader[i]->sh_offset+sheader[i]->sh_size)){
-                    fread(relTable[compteurRel][j], 1,sizeof(Elf32_Rel),fp);
-                    j++;
-                    }
-                while (j<header.e_shnum){
-                    //free(relTable[i][j]);
-                    relTable[i][j]=NULL;
-                    j++;}
-                compteurRel++;
-                break;
-            
-            case 4 : 
-                fseek(fp,sheader[i]->sh_offset,SEEK_SET);
-                while (ftell(fp)<(sheader[i]->sh_offset+sheader[i]->sh_size)){
-                    fread(relaTable[compteurRela][j], 1,sizeof(Elf32_Rela),fp);
-                    j++;
-                    }
-                while (j<header.e_shnum){
-                    //free(relaTable[i][j]);
-                    relaTable[i][j]=NULL;
-                    j++;}
-                compteurRela++;
-                break;
-
-            default: 
-                break;
-        }
-    }
-    for (int i=0;i<compteurRel;i++){
-        printf(" \n");
-        printf("table des relocation %d\n",i);
-        printf(" \n");
-        afficherRelTables( relTable[i],header);}
-    for (int i=0;i<compteurRela;i++){
-        printf(" \n");
-        printf("table des relocation avec addent %d\n",i);
-        printf(" \n");
-        afficherRelaTables( relaTable[i],header);}
-}
-
-////////////////////////////////////////////////
-
-void printInfoSym(unsigned char info){
-  switch(ELF32_ST_BIND(info)){
-    case 0: printf("LOCAL");break;
-    case 1: printf("GLOBAL");break;
-    default:printf("AUTRE");break;
-  }
-  printf("\t");
-  switch(ELF32_ST_TYPE(info)){
-    case 0: printf("NOTYPE");break;
-    case 1: printf("OBJECT");break;
-    case 2: printf("FUNC");break;
-    case 3: printf("SECTION");break;
-    case 4: printf("FILE");break;
-    case 5: printf("COMMON");break;
-    default:printf("AUTRE");break;
-  }
-  printf("\t");
-}
-
-void readSymTab(FILE * fp, Elf32_Shdr** sheader, int symTabNum,Elf32_Sym ** STable, char * strTab){
-    fseek(fp,sheader[symTabNum]->sh_offset,SEEK_SET);
-    printf("Num\t");
-    printf("Valeur\t");
-    printf("Tail\t");
-    printf("Lien\t");
-    printf("Type\t");
-    printf("Ndx\t");
-    printf("Nom\t\n");
-    for(int i=0; i<sheader[symTabNum]->sh_size/sizeof(Elf32_Sym);i++){
-        STable[i]=(Elf32_Sym*)malloc(sizeof(Elf32_Sym));
-        fread(STable[i],1, sizeof(Elf32_Sym), fp);
-        printf("%d\t",i);
-        printf("0x%X\t",STable[i]->st_value);
-        printf("%d\t",STable[i]->st_size);
-        printInfoSym(STable[i]->st_info);
-        //printf("autre du symbole : %d\n",STable[i]->st_other);
-        if(STable[i]->st_shndx == 0) printf("UND\t");
-        else printf(" %d\t",STable[i]->st_shndx);
-        int j = STable[i]->st_name;
-        while(strTab[j] != '\0'){
-          printf("%c", strTab[j]);
-          j++;
-        }
-        printf("\n");
-    }
-}
-
+	
 int main(int argc, char *argv[]){
 	if(argc != 2){
 		printf("Il faut 1 arguments");
@@ -414,43 +203,24 @@ int main(int argc, char *argv[]){
   	}
   	FILE * src = fopen(argv[1], "r");
   	if(src){
-      Elf32_Ehdr * header;
-      printf("\n");
-      printf(" /// HEADER ELF /// \n");
-      printf("\n");
-          header = elf_read_entete(src);
-      Elf32_Shdr *sheader[header->e_shnum];
-      printf("\n");
-      printf(" /// section HEADER TABLE /// \n");
-      printf("\n");
-
-      afficherTableSectionHeader(src,*header,sheader);
-      printf("\n");
-      printf(" /// section ELF /// \n");
-      printf("\n");
-      for (int i=0; i<10;i++){
-        printf("section %d \n",i);
-        affichage_contenu_section(i,*header,sheader,src);
-      }
-      printf("\n");
-      printf(" /// Affichage des symboles /// \n");
-      printf("\n");
-      int symTabNum=findSymTab(sheader,header->e_shnum);
-      if(symTabNum < header->e_shnum){
-        int numSec = findStrTabSym(sheader,*header);
-        //char strTab[sheader[numSec]->sh_size/sizeof(char)] = createStrTab(sheader, src, numSec);
-        char* strTab = malloc(sheader[numSec]->sh_size);
-        strTab = createStrTab(sheader, src, numSec);
-        Elf32_Sym * STable[sheader[symTabNum]->sh_size/sizeof(Elf32_Sym)];
-        readSymTab(src, sheader, symTabNum, STable, strTab);
-      }else{
-        printf("il n'y a pas de table des symboles \n");
-
-      }
-  	  getRelTable(src,*header,sheader);
-    } else {
+		Elf32_Ehdr * header;
+		printf("\n");
+		printf(" /// HEADER ELF /// \n");
+		printf("\n");
+    		header = elf_read_entete(src);
+		Elf32_Shdr *sheader[header->e_shnum];
+		printf("\n");
+		printf(" /// section HEADER TABLE /// \n");
+		printf("\n");
+		afficherTableSectionHeader(src,*header,sheader);
+		printf("\n");
+		printf(" /// section ELF /// \n");
+		printf("\n");
+		for (int i=0; i<10;i++){
+			printf("section %d \n",i);
+			affichage_contenu_section(i,*header,sheader,src);}
+		
+  	} else {
    		printf("bad file");
   	}
-
-
 }
