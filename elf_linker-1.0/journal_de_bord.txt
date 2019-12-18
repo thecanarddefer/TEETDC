@@ -1,0 +1,19 @@
+jeudi 12: 
+-prise de connaissance du sujet
+-creation des groupes
+-creation d'un discord et d'un git hub afin d'avoir un milieu de travail adéquat
+
+Vendredi 13 : 
+-lecture de la documentation
+-lecture complète du sujet
+
+Lundi 16 :
+Réalisation des parties 1, 2 et 3 en sous-groupes de 2
+
+Mardi 17 :
+Réalisation des parties 4 et 5 en sous-groupes de 3
+
+Mercredi 18 :
+Division du groupe en 2 sous-groupes:
+-Restructuration du code de toute la phase 1
+-Début de la phase 2 (étape 6/7) 
