@@ -1,4 +1,10 @@
-all: ELFRead
+all: ELFFusion
+
+ELFFusion: ELFFusion.o ELFRead.o partie1.o partie2.o partie3.o
+	gcc -o $@ $^
+
+ELFFusion.o: ELFFusion.c ELFRead.h partie1.h partie2.h partie3.h
+	gcc -c $< 
 
 ELFRead: ELFRead.o partie1.o partie2.o partie3.o
 	gcc -o $@ $^
