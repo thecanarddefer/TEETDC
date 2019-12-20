@@ -31,12 +31,24 @@ void printE_Ehsize(Elf32_Half e_ehsize);
 void printE_Phoff(Elf32_Off e_phoff);
 	//permet de print le debut des entetes de programme 
 
-void printE_Shoff(Elf32_Ehdr * header);
+void printE_Phnum(Elf32_Half e_phnum);
+	//permet de print le nombre d'entete de programme
+
+void printE_Phensize(Elf32_Half e_phentsize);
+	//permet de print la taille des entete de programme
+
+void printE_Shoff(Elf32_Off e_shoff);
 	//permet de print le debut des entetes de sections, la Taille de la table des sections,
 	// le nombre d'entrées et la taille de l'entête de sections 
 
 void printIndexTableNomSection(Elf32_Half e_shstrndx);
 	//permet de print l'index d'entrée de la table des nom de sections
+
+void printE_Shnum(Elf32_Half e_shnum);
+	//permet de print le nombre d'entete de section
+
+void printE_Shensize(Elf32_Half e_shentsize);
+	//permet de print la taille des entete de section
 
 void afficherheaderELF(Elf32_Ehdr * header);
 	//permet d'afficher le header ELF

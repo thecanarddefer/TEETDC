@@ -44,18 +44,19 @@ void affichage_contenu_section (int num,Elf32_Ehdr header,Elf32_Shdr** sheader ,
     else {
 		printf("nom de section : ");
 		char* strTabSection = malloc(sheader[header.e_shstrndx]->sh_size);
-    	strTabSection = createStrTab(sheader, f, header.e_shstrndx);
+    		strTabSection = createStrTab(sheader, f, header.e_shstrndx);
 		int j = sheader[num]->sh_name;
-        while(strTabSection[j] != '\0'){
-          	printf("%c", strTabSection[j]);
-          	j++;
-        }
+        	while(strTabSection[j] != '\0'){
+          		printf("%c", strTabSection[j]);
+          		j++;
+        	}
 		printf("\n");
-        if (sheader[num]->sh_size==0){
+        	if (sheader[num]->sh_size==0){
 			printf("\n");
-            printf("section vide\n");
-            printf("\n");}
-        else {
+            		printf("section vide\n");
+            		printf("\n");
+		}
+        	else {
 		    uint8_t contenu[sheader[num]->sh_size];
 		    fseek(f,sheader[num]->sh_offset,SEEK_SET);
 		    fread(contenu, 1,sheader[num]->sh_size, f);
