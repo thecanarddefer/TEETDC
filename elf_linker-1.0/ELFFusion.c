@@ -53,6 +53,7 @@ void ecrireSectionMergeable(FILE * dest, FILE * src1, FILE * src2, Elf32_Shdr **
 int mergeSheader(Elf32_Shdr ** sheader1, Elf32_Ehdr header1, Elf32_Shdr ** sheader2, Elf32_Ehdr header2, Elf32_Shdr ** sheaderFin, int nbSymbole, int tailleSTRTAB, Elf32_Sym ** symTab, char * strTabSym, FILE * dest, FILE * src1, FILE * src2){
     int count = 0;
     int decalage = 0;
+    int offset = 0;
     int j;
     for(int i=0; i<header1.e_shnum;i++){
         
@@ -62,10 +63,11 @@ int mergeSheader(Elf32_Shdr ** sheader1, Elf32_Ehdr header1, Elf32_Shdr ** shead
                 j++;
             }
             if(j!=header2.e_shnum){
+                printf("sh_link1=%d\n",sheader1[i]->sh_link);
                 sheaderFin[i]=sheader1[i];//Attention PE mauvaise copie!!!!!!!!!!!!!!!!!!!!!!!!!!
-
+                printf("sh_link2=%d\n",sheaderFin[i]->sh_link);
                 int tmpsize =sheader1[i]->sh_size;
-                sheaderFin[i]->sh_offset+=decalage;
+                sheaderFin[i]->sh_offset=offset;
 
                 if(sheaderFin[i]->sh_type==SHT_SYMTAB){
                     sheaderFin[i]->sh_size= sizeof(Elf32_Sym)*nbSymbole;
@@ -102,6 +104,7 @@ int mergeSheader(Elf32_Shdr ** sheader1, Elf32_Ehdr header1, Elf32_Shdr ** shead
             sheaderFin[i]=sheader1[i];
             ecrireSection(dest, src1, sheader1, i);
         }
+        offset=ftell(dest);
         
         count++;
         
@@ -115,16 +118,18 @@ int mergeSheader(Elf32_Shdr ** sheader1, Elf32_Ehdr header1, Elf32_Shdr ** shead
         }
         if(j==header1.e_shnum){
             sheaderFin[count]=sheader2[i];
-            sheaderFin[count]->sh_offset=decalage;
+            sheaderFin[count]->sh_offset=offset;
             decalage+=sheader2[i]->sh_size;
             sheaderFin[count]->sh_name+=sheader1[header1.e_shstrndx]->sh_size;
             if(sheaderFin[count]->sh_type==SHT_REL ){
                 sheaderFin[count]->sh_link=header1.e_shstrndx;
             }
+            ecrireSection(dest, src2, sheader2, i);
             count++;
+            offset=ftell(dest);
         }
     }
-
+    printTableSection(src1,header1,sheaderFin);
     return count;
 }
 char * getNomSymboles(Elf32_Word name,char* strTab, int taille){
