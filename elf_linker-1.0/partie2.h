@@ -3,22 +3,42 @@
 #include <stdlib.h>
 
 void printKeyFlags();
-	// affiche la description des flags
+	//Donnée :none
+	//Fonction :affiche la description des flags
+	//Retour:None
 
 void printSh_Type(Elf32_Word leMot);
-	// affiche le type d'une section
+	//Donnée :le type d'une section sous forme binaire (Elf32_Word)
+	//Fonction :affiche le type d'une section
+	//Retour:None
+	
     
 void printFlagz(Elf32_Word leMot);
-	// affiche les flags d'une section
+	//Donnée :les flags d'une section sous forme binaire (Elf32_Word)
+	//Fonction :affiche les flags d'une section
+	//Retour:None
+	
 
-void afficherTableSectionHeader(FILE * fp, Elf32_Ehdr header, Elf32_Shdr ** sheader);
-	// lis la table des section header
+void lectureTableSectionHeader(FILE * fp, Elf32_Ehdr header, Elf32_Shdr ** sheader);
+	//Donnée :le fichier source (fp), l'entete du fichier (header), le pointeur du tableau des entete de section (sheader)
+	//Fonction :lis la table des section header
+	//Retour:None
+
 
 void printTableSection(FILE * fp, Elf32_Ehdr header, Elf32_Shdr ** sheader);
-	// affiche la table des section header
+	//Donnée :le fichier source (fp), l'entete du fichier (header), le pointeur du tableau des entete de section (sheader)
+	//Fonction :affiche la table des section header
+	//Retour:None
+	
 
-char * createStrTab(Elf32_Shdr** sheader, FILE * fp, int num);
-	// permet de lire un section header	
+char * createStrTab(Elf32_Shdr** sheader, FILE * fp, Elf32_Half num);
+	//Donnée :le pointeur du tableau des entete de section (sheader),le fichier source (fp), l'index de la table des noms de section du tableau des entetes de section (num)
+	//Fonction :creer la table des noms de section
+	//Retour: la table des noms de section (strTab)
+
 
 void freeSHDR(Elf32_Shdr ** sheader);
-	// libere la table des section header
+	//Donnée :le pointeur du tableau des entete de section (sheader)
+	//Fonction :libere la table des section header
+	//Retour:None
+	
