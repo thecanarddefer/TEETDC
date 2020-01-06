@@ -24,7 +24,7 @@ partie3.o: partie3.c partie3.h partie2.h
 partie4.o: partie4.c partie4.h
 	gcc -c $<
 
-partie5.o: partie5.c partie5.h partie2.h
+partie5.o: partie5.c partie5.h partie4.h partie2.h
 	gcc -c $<
 
 clean:

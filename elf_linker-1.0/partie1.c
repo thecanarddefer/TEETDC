@@ -4,7 +4,7 @@
 #include "partie1.h"
 
 
-void printTypeELF(Elf32_Half e_type ){
+void printTypeELF(Elf32_Half e_type ){ // switch pour trouver le type de fichier
   	printf("Type de fichier ELF : 				 ");
 	switch(e_type){
     	case ET_NONE: printf("No file type\n");
@@ -22,7 +22,7 @@ void printTypeELF(Elf32_Half e_type ){
 }
 
 
-void printE_Machine(Elf32_Half e_machine){
+void printE_Machine(Elf32_Half e_machine){ // switch pour trouver le type de machine
   	printf("Machine: 					 ");
 	switch(e_machine){
     	case EM_ARM: printf("ARM\n");
@@ -37,7 +37,7 @@ void printE_Machine(Elf32_Half e_machine){
   }
 }
 
-void printE_Ident(unsigned char * e_ident){
+void printE_Ident(unsigned char * e_ident){ // switch pour trouver la classe du fichier 
 	printf("Classe : 					 ");
 	switch(e_ident[EI_CLASS]){
 		case ELFCLASS32:printf("ELF32 \n");
@@ -47,7 +47,7 @@ void printE_Ident(unsigned char * e_ident){
 		default: printf("Invalide\n");
 	}
 	printf("Données : 					 ");
-	switch(e_ident[EI_DATA]){
+	switch(e_ident[EI_DATA]){ // switch pour trouver le type d'écriture des données 
 		case ELFDATA2LSB:printf("compléments à 2, little endian \n");
 			break;
 		case ELFDATA2MSB:printf("compléments à 2, big endian \n");
@@ -58,7 +58,7 @@ void printE_Ident(unsigned char * e_ident){
 
 void printE_Magique(unsigned char * e_ident){
 	printf("Magique : 	 ");
-	for (int i=0 ;i<EI_NIDENT; i++){
+	for (int i=0 ;i<EI_NIDENT; i++){ // boucle affichant l'intégralité de l'e_ident
   		printf("%02x ", e_ident[i]);
   	}
   	printf("\n");
@@ -66,7 +66,7 @@ void printE_Magique(unsigned char * e_ident){
 
 void printE_Version(Elf32_Word e_version){
 	printf("Version : 					 ");
-	if(e_version == EV_CURRENT){
+	if(e_version == EV_CURRENT){ // affiche la version
     	printf("%d (current)\n",e_version);
   	}else if(e_version == EV_NONE){
     	printf("%d Invalid ELF\n",e_version);
@@ -75,59 +75,59 @@ void printE_Version(Elf32_Word e_version){
 
 void printE_Entry(Elf32_Addr e_entry){
 	printf("Adresse du point d'entrée : 			 ");
-  	printf("0x%x\n", e_entry);
+  	printf("0x%x\n", e_entry); // affiche l'adresse de l'entrée
 }
 
 void printE_Flags(Elf32_Word e_flags){
 	printf("Flags : 					 ");
-	printf("0x%x\n", e_flags);
+	printf("0x%x\n", e_flags); // affiche les flags
 }
 
 void printE_Ehsize(Elf32_Half e_ehsize){
   	printf("Taille de l'entête : 				 ");
-  	printf("%d octets\n",e_ehsize);
+  	printf("%d octets\n",e_ehsize);// affiche la taille de l'entête
 }
 
 void printE_Phoff(Elf32_Off e_phoff){
     	printf("Debut des entetes de programme : 		 ");
-    	printf("%d (octets dans fichier)\n",e_phoff);
+    	printf("%d (octets dans fichier)\n",e_phoff); // affiche le début des entétes de programme
   	
 }
 
 void printE_Phensize(Elf32_Half e_phentsize){
 	printf("Taille de la table des programme : 		 ");
-	printf("%d octets\n",e_phentsize);
+	printf("%d octets\n",e_phentsize);// affiche la taille de la table des programmes
 }  	
 
 void printE_Phnum(Elf32_Half e_phnum){
 	printf("Nombre d'entetes de programme : 		 ");
-	printf("%d\n",e_phnum);
+	printf("%d\n",e_phnum); // affiche le nombre d'entete des programmes
 }
 
 void printE_Shoff(Elf32_Off e_shoff){
-    	printf("Debut des entetes de sections: 			 ");
-    	printf("%d (octets dans fichier)\n",e_shoff);
+    	printf("Debut des entetes de section: 			 ");
+    	printf("%d (octets dans fichier)\n",e_shoff);// affiche le début de l'entête de section
 }
 
 void printE_Shensize(Elf32_Half e_shentsize){
 	printf("Taille de la table des sections : 		 ");
-	printf("%d octets\n",e_shentsize);
+	printf("%d octets\n",e_shentsize); // affiche la taille de la table des section
 }  	
 
 void printE_Shnum(Elf32_Half e_shnum){
 	printf("Nombre d'entetes de section : 			 ");
-	printf("%d\n",e_shnum);
+	printf("%d\n",e_shnum); // affiche le nombre des entête de section
 }
 
-void printIndexTableNomSection(Elf32_Half e_shstrndx){
+void printIndexTableNomSection(Elf32_Half e_shstrndx){ // affiche l'index de l'entête des nom de section
 	printf("Index d'entrée de la table des nom de sections : ");
   	if(e_shstrndx == SHN_UNDEF){
 	 	printf("Pas de table de nom sections");}
   	else {
-		printf("%d\n",e_shstrndx);}
+		printf("%d\n",e_shstrndx + 1);}
 }
 
-void afficherheaderELF(Elf32_Ehdr * header){
+void afficherheaderELF(Elf32_Ehdr * header){ //affiche le header ELF
 	//Magique
 	printE_Magique(header->e_ident);
   	//e_ident
@@ -161,13 +161,13 @@ void afficherheaderELF(Elf32_Ehdr * header){
 }
 
 Elf32_Ehdr * elf_read_entete(FILE * src){
-  	Elf32_Ehdr * header = malloc(sizeof(Elf32_Ehdr));
-  	fread(header,1, sizeof(Elf32_Ehdr), src);
+  	Elf32_Ehdr * header = malloc(sizeof(Elf32_Ehdr));// allocation du header
+  	fread(header,1, sizeof(Elf32_Ehdr), src); // lecture du header
   	afficherheaderELF(header);
   	return header;
 }
 
 void freeHeader(Elf32_Ehdr * header){
-	free(header);
+	free(header); // libère le header
 }
 
