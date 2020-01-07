@@ -8,7 +8,7 @@
 
 int findSymTab(Elf32_Shdr** sheader, int max){
     	int num=0;
-    	while(sheader[num]->sh_type!=SHT_SYMTAB && num< max){
+    	while(sheader[num]->sh_type!=SHT_SYMTAB && num< max){//boucle jusqu'à la section SYMTAB 
         	num++;
     	}
     	return num;
@@ -16,14 +16,14 @@ int findSymTab(Elf32_Shdr** sheader, int max){
 
 int findStrTabSym(Elf32_Shdr** sheader, Elf32_Ehdr header){
     	int num=0;
-    	while(sheader[num]->sh_type!=SHT_STRTAB || num==header.e_shstrndx){
+    	while(sheader[num]->sh_type!=SHT_STRTAB || num==header.e_shstrndx){//boucle jusqu'à la section STRTAB 
         	num++;
     	}
     	return num;
 }
 
 void printInfoSymType(unsigned char info){
-  	switch(ELF32_ST_TYPE(info)){
+  	switch(ELF32_ST_TYPE(info)){// affiche le type de symbole 
     		case STT_NOTYPE : printf("NOTYPE");break;
     		case STT_OBJECT: printf("OBJECT");break;
     		case STT_FUNC: printf("FUNC");break;
@@ -41,7 +41,7 @@ void printInfoSymType(unsigned char info){
 
 
 void printInfoSymBind(unsigned char info){
-  	switch(ELF32_ST_BIND(info)){
+  	switch(ELF32_ST_BIND(info)){// affiche type de lien des symboles
     		case STB_LOCAL: printf("LOCAL");break;
     		case STB_GLOBAL: printf("GLOBAL");break;
     		case STB_WEAK: printf("WEAK");break;
@@ -54,7 +54,7 @@ void printInfoSymBind(unsigned char info){
 }
 
 void printInfoSymVisi(unsigned char info){
-  	switch(ELF32_ST_VISIBILITY(info)){
+  	switch(ELF32_ST_VISIBILITY(info)){// affiche la visibilité du symbole
     		case STV_DEFAULT: printf("DEFAULT\t");break;
     		case STV_INTERNAL: printf("INTERNAL");break;
     		case STV_HIDDEN: printf("HIDDEN\t");break;
@@ -64,7 +64,7 @@ void printInfoSymVisi(unsigned char info){
 }
 
 void afficherTabSymb(Elf32_Sym ** STable, Elf32_Shdr** sheader, int symTabNum,char * strTab){
-    	printf("Num\t");
+    	printf("Num\t");// affiche les colonnes de la table des symboles
     	printf("Valeur\t\t");
     	printf("Taille\t");
     	printf("Type\t");
@@ -72,7 +72,7 @@ void afficherTabSymb(Elf32_Sym ** STable, Elf32_Shdr** sheader, int symTabNum,ch
 	printf("Visi\t\t");
     	printf("Ndx\t");
     	printf("Nom\t\n");
-    	for(int i=0; i<sheader[symTabNum]->sh_size/sizeof(Elf32_Sym);i++){
+    	for(int i=0; i<sheader[symTabNum]->sh_size/sizeof(Elf32_Sym);i++){//boucle sur les symboles
 		// num
        		printf("%d\t",i);
 		// valeur
@@ -97,7 +97,7 @@ void afficherTabSymb(Elf32_Sym ** STable, Elf32_Shdr** sheader, int symTabNum,ch
 		}
 		// nom
         	int j = STable[i]->st_name;
-        	while(strTab[j] != '\0'){
+        	while(strTab[j] != '\0'){ // affiche le nom du symbole
           		printf("%c", strTab[j]);
           		j++;
         		}
@@ -107,15 +107,17 @@ void afficherTabSymb(Elf32_Sym ** STable, Elf32_Shdr** sheader, int symTabNum,ch
 
 void readSymTab(FILE * fp, Elf32_Shdr** sheader, int symTabNum,Elf32_Sym ** STable, char * strTab){
    	fseek(fp,sheader[symTabNum]->sh_offset,SEEK_SET);
-    	for(int i=0; i<sheader[symTabNum]->sh_size/sizeof(Elf32_Sym);i++){
-        	STable[i]=(Elf32_Sym*)malloc(sizeof(Elf32_Sym));
-        	fread(STable[i],1, sizeof(Elf32_Sym), fp);
+    	for(int i=0; i<sheader[symTabNum]->sh_size/sizeof(Elf32_Sym);i++){//boucle sur les symboles
+        	STable[i]=(Elf32_Sym*)malloc(sizeof(Elf32_Sym));// alloue l'espace du symbole
+        	fread(STable[i],1, sizeof(Elf32_Sym), fp);// lit le symbole
     	}
-	afficherTabSymb(STable,sheader,symTabNum, strTab);
+	afficherTabSymb(STable,sheader,symTabNum,strTab);
 }
 
-
-
+void freeSymTab(Elf32_Sym ** STable,Elf32_Shdr** sheader,int symTabNum){
+	for(int i=0; i<sheader[symTabNum]->sh_size/sizeof(Elf32_Sym);i++){
+		free(STable[i]);}//libere le symbole
+}
 
 
 

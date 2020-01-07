@@ -28,7 +28,8 @@ int main(int argc, char *argv[]){
       printf("\n");
       printf(" /// HEADER ELF /// \n");
       printf("\n");
-          header = elf_read_entete(src);
+        header = elf_read_entete(src);
+	afficherheaderELF(header);
       Elf32_Shdr *sheader[header->e_shnum];
       printf("\n");
       printf(" /// section HEADER TABLE /// \n");
@@ -48,14 +49,18 @@ int main(int argc, char *argv[]){
       if(symTabNum < header->e_shnum){
         int numSec = findStrTabSym(sheader,*header);
         //char strTab[sheader[numSec]->sh_size/sizeof(char)] = createStrTab(sheader, src, numSec);
-        char* strTab = malloc(sheader[numSec]->sh_size);
-        strTab = createStrTab(sheader, src, numSec);
+        char* strTab = createStrTab(sheader, src, numSec);
         Elf32_Sym * STable[sheader[symTabNum]->sh_size/sizeof(Elf32_Sym)];
         readSymTab(src, sheader, symTabNum, STable, strTab);
 	printf("\n");
      	 printf(" /// Affichage des relocation /// \n");
       	printf("\n");
-	getRelTable(src,*header,sheader,STable,strTab);
+	int compteurRel=nombre_reloc(*header,sheader);
+	reloc *relTable[compteurRel];
+
+ 	getRelTable(src,*header,sheader,STable,strTab,compteurRel,relTable );
+	//printf("%x",relTable[0][2]);
+	
       }else{
         printf("il n'y a pas de table des symboles \n");
 
