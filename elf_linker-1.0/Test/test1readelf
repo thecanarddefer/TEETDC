@@ -1,0 +1,20 @@
+En-tête ELF:
+  Magique:   7f 45 4c 46 01 01 01 00 00 00 00 00 00 00 00 00 
+  Classe:                            ELF32
+  Données:                          complément à 2, système à octets de poids faible d'abord (little endian)
+  Version:                           1 (current)
+  OS/ABI:                            UNIX - System V
+  Version ABI:                       0
+  Type:                              REL (Fichier de réadressage)
+  Machine:                           ARM
+  Version:                           0x1
+  Adresse du point d'entrée:               0x0
+  Début des en-têtes de programme :          0 (octets dans le fichier)
+  Début des en-têtes de section :          596 (octets dans le fichier)
+  Fanions:                           0x5000000, Version5 EABI
+  Taille de cet en-tête:             52 (octets)
+  Taille de l'en-tête du programme:  0 (octets)
+  Nombre d'en-tête du programme:     0
+  Taille des en-têtes de section:    40 (octets)
+  Nombre d'en-têtes de section:      11
+  Table d'indexes des chaînes d'en-tête de section: 8

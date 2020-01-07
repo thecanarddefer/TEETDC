@@ -15,5 +15,27 @@ Réalisation des parties 4 et 5 en sous-groupes de 3
 
 Mercredi 18 :
 Division du groupe en 2 sous-groupes:
--Restructuration du code de toute la phase 1
--Début de la phase 2 (étape 6/7) 
+-Restructuration du code des parties 1 et 2
+-Début de la phase 2 (étape 6/7) et par erreur la 9
+
+jeudi 19 :
+Division du groupe en 2 sous-groupes:
+-Restructuration du code des parties 3 et 4
+-étape 7
+
+vendredi 20 :
+Division du groupe en 2 sous-groupes:
+-Restructuration du code des parties 4 et 5
+-Fin étape 7 
+puis audite de code
+
+Lundi 6
+Division du groupe en 2 sous-groupes:
+-documentation du code & debogage de la partie 5
+-début de la partie 8 & debogage parties 6-7-9
+
+mardi 7
+Division du groupe en 2 sous-groupes:
+-amélioration de la partie 5 & documentation de code
+-partie 8 en cours
+mise en commun de ces deux parties pour finir la partie 8

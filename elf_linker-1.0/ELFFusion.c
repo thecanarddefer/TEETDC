@@ -19,7 +19,7 @@ int isMergeable(Elf32_Word type){
 }
 void ecrireSheader(Elf32_Shdr ** sheader, FILE * dest, int nombreDeSection){
     fseek(dest, 0, SEEK_END);
-    printf("pos ecriture sheader: %ld\n",ftell(dest)+52);
+    // printf("pos ecriture sheader: %ld\n",ftell(dest)+52);
     for(int i = 0; i < nombreDeSection;i++){
         fwrite(sheader[i], sizeof(Elf32_Shdr), 1, dest);
     }
@@ -31,7 +31,7 @@ void ecrireHeader(Elf32_Ehdr * header1, FILE * dest){
 }
 
 void ecrireSectionSymbole(FILE * dest, Elf32_Sym ** symTab, int nbSymbole){
-    printf("pos ecriture section sym: %ld\n",ftell(dest)+52);
+    // printf("pos ecriture section sym: %ld\n",ftell(dest)+52);
 
     for(int i = 0; i < nbSymbole;i++){
         fwrite(symTab[i], sizeof(Elf32_Sym), 1, dest);
@@ -39,12 +39,12 @@ void ecrireSectionSymbole(FILE * dest, Elf32_Sym ** symTab, int nbSymbole){
 }
 
 void ecrireSectionStringSymbole(FILE * dest, char * strTabSym, int tailleSTRTAB){
-    printf("pos ecriture string sec sym: %ld\n",ftell(dest)+52);
+    // printf("pos ecriture string sec sym: %ld\n",ftell(dest)+52);
     fwrite(strTabSym, tailleSTRTAB, 1, dest);
 }
 
 void ecrireSection(FILE * dest, FILE * src, Elf32_Shdr ** sheader, int indice){
-    printf("pos ecriture section num %d %ld Size : %d\n",indice, ftell(dest)+52, sheader[indice]->sh_size);
+    // printf("pos ecriture section num %d %ld Size : %d\n",indice, ftell(dest)+52, sheader[indice]->sh_size);
     uint8_t contenu[sheader[indice]->sh_size];
     fseek(src, sheader[indice]->sh_offset, SEEK_SET);
     fread(contenu, 1,sheader[indice]->sh_size, src);
@@ -66,15 +66,16 @@ void printSheader(Elf32_Shdr ** sheaderFin, int count){
 
 
 char * getNomSymboles(Elf32_Word name,char* strTab, int taille){
+    int compteur =name;
     char nom[taille];
     int taillefinale=0;
-    while(strTab[name]!='\0'){
-        nom[taillefinale]=strTab[name];
+    while(strTab[compteur]!='\0'){
+        nom[taillefinale]=strTab[compteur];
         taillefinale++;
-        name++;
+        compteur++;
     }
     char * nomFinal=malloc(taillefinale+2);
-    for(int i=0; i<=taillefinale;i++){
+    for(int i=0; i<taillefinale;i++){
         nomFinal[i]=nom[i];
     }
     nomFinal[taillefinale+1] = '\0';
@@ -92,8 +93,17 @@ int memeString(char* s1, char * s2){
         return 0;
     }
 }
+// void mergeRelocationTable(Elf32_Shdr ** sheader1,Elf32_Shdr ** sheader2, indice1, indice2, char * strTabSymFinale, char * strTabSym2, char* strTabSection1, FILE * src1, FILE * src2 ){
+//     //via indice 1 copier src1 dest
 
-int mergeSheader(Elf32_Shdr ** sheader1, Elf32_Ehdr header1, Elf32_Shdr ** sheader2, Elf32_Ehdr header2, Elf32_Shdr ** sheaderFin, int nbSymbole, int tailleSTRTAB, Elf32_Sym ** symTab, char * strTabSym, FILE * dest, FILE * src1, FILE * src2, char* strTabSection1, char* strTabSection2){
+//     //sheader2->indice->sh_name->strTabSection1 trouver taille sheader1
+//     //iterer sur sheader2 indice2 : ajouter taille sheader1 a l'offset , trouver le numero de symbole
+//     //
+
+
+// }
+
+int mergeSheader(Elf32_Shdr ** sheader1, Elf32_Ehdr header1, Elf32_Shdr ** sheader2, Elf32_Ehdr header2, Elf32_Shdr ** sheaderFin, int nbSymbole, int tailleSTRTAB, Elf32_Sym ** symTab, char * strTabSym, FILE * dest, FILE * src1, FILE * src2, char* strTabSection1, char* strTabSection2, int* nouveauxIndices){
     int count = 0;
     //int decalage = 0;
     int offset = 52; //test avec un offset set a la taille du header
@@ -124,7 +134,7 @@ int mergeSheader(Elf32_Shdr ** sheader1, Elf32_Ehdr header1, Elf32_Shdr ** shead
                     ecrireSectionStringSymbole(dest, strTabSym, tailleSTRTAB);
                 }
                 else{
-                    printf("????????????? size sec merg 1 : %d size sec merge 2 : %d\n",sheaderFin[i]->sh_size, sheader2[j]->sh_size);
+                    // printf("????????????? size sec merg 1 : %d size sec merge 2 : %d\n",sheaderFin[i]->sh_size, sheader2[j]->sh_size);
                     //decalage+=sheader2[j]->sh_size;
                     ecrireSectionMergeable(dest, src1, src2, sheader1, sheader2, i, j);
                     sheaderFin[i]->sh_size+=sheader2[j]->sh_size;
@@ -150,7 +160,7 @@ int mergeSheader(Elf32_Shdr ** sheader1, Elf32_Ehdr header1, Elf32_Shdr ** shead
             ecrireSection(dest, src1, sheader1, i);
         }
         sheaderFin[i]->sh_offset=offset;
-        printf("offset : %d\n", offset);
+        // printf("offset : %d\n", offset);
         offset+=sheaderFin[i]->sh_size;
         
         count++;
@@ -176,11 +186,11 @@ int mergeSheader(Elf32_Shdr ** sheader1, Elf32_Ehdr header1, Elf32_Shdr ** shead
         }
     }
     //printTableSection(src1,header1,sheaderFin);
-    printSheader(sheaderFin, count);
+    // printSheader(sheaderFin, count);
     return count;
 }
 
-void mergeSymAndStr(char* strTab1,char* strTab2,Elf32_Sym ** symTable1,Elf32_Sym ** symTable2, char * strTabFin, Elf32_Sym ** symTableFin, int t1, int t2, int * compteurSTRTAB, int * count){
+void mergeSymAndStr(char* strTab1,char* strTab2,Elf32_Sym ** symTable1,Elf32_Sym ** symTable2, char * strTabFin, Elf32_Sym ** symTableFin, int t1, int t2, int * compteurSTRTAB, int * count, int* nouveauxIndices){
     (*compteurSTRTAB)=1;
     strTabFin[0]='\0';
     for(int i = 0; i < t1;i++){
@@ -206,9 +216,8 @@ void mergeSymAndStr(char* strTab1,char* strTab2,Elf32_Sym ** symTable1,Elf32_Sym
     int k = 0;
     for(int j = 0;j < t2;j++){
         if(ELF32_ST_BIND(symTable2[j]->st_info)==1){
-            while(k<t1 && !memeString(getNomSymboles(symTable2[j]->st_name, strTab2, t2), getNomSymboles(symTableFin[k]->st_name, strTab1, t1))){
-                k++;
-                
+            while(k<t1 && !memeString(getNomSymboles(symTable2[j]->st_name, strTab2, t2), getNomSymboles(symTableFin[k]->st_name, strTabFin, t1))){
+                k++;   
             }
             if(k==t1){
                 symTableFin[(*count)]=symTable2[j];
@@ -220,18 +229,24 @@ void mergeSymAndStr(char* strTab1,char* strTab2,Elf32_Sym ** symTable1,Elf32_Sym
                     (*compteurSTRTAB)++;
                 }
                 strTabFin[(*compteurSTRTAB)]='\0';
+                nouveauxIndices[j]=(*count);
+                printf("count : %d\n", *count);
+                fflush(stdout);
                 (*compteurSTRTAB)++;
                 (*count)++;
             } else{
                 //// Proble Type Fusioné les Fonctions Quand global ???
 
-                // if(symTable2[j]->st_shndx != STN_UNDEF && symTableFin[k]->st_shndx != STN_UNDEF){
-                //     printf("Line 2346 : ERROR : 2 global variables have same name");
-                //     exit(0);
-                // } else 
-                if(symTable2[j]->st_shndx != STN_UNDEF && symTableFin[k]->st_shndx == STN_UNDEF){
+                if(symTable2[j]->st_shndx != STN_UNDEF && symTableFin[k]->st_shndx != STN_UNDEF){
+                    printf("Line 2346 : ERROR : 2 global variables have same name");
+                    exit(0);
+                } else if(symTable2[j]->st_shndx != STN_UNDEF && symTableFin[k]->st_shndx == STN_UNDEF){
+                    int tmp =symTableFin[k]->st_name;
                     symTableFin[k]=symTable2[j];
+                    symTableFin[k]->st_name =tmp;
                 }
+                nouveauxIndices[j]=k;
+
             }
 
             k=0;
@@ -246,19 +261,19 @@ void mergeSymAndStr(char* strTab1,char* strTab2,Elf32_Sym ** symTable1,Elf32_Sym
                 (*compteurSTRTAB)++;
             }
             strTabFin[(*compteurSTRTAB)]='\0';
+            nouveauxIndices[j]=(*count);
             (*compteurSTRTAB)++;
             (*count)++;
         }
     }
-    
 }
 
 Elf32_Ehdr createElfHeader(Elf32_Shdr ** sheaderFin, Elf32_Ehdr header1, int nombreDeSection){
     Elf32_Ehdr headerFin = header1;
     headerFin.e_shnum = nombreDeSection;
     headerFin.e_shoff = sheaderFin[nombreDeSection-1]->sh_offset + sheaderFin[nombreDeSection-1]->sh_size;
-    printf("OFFSET = %d",sheaderFin[nombreDeSection-1]->sh_offset);
-    printf("SIZE   = %d",sheaderFin[nombreDeSection-1]->sh_size);
+    // printf("OFFSET = %d",sheaderFin[nombreDeSection-1]->sh_offset);
+    // printf("SIZE   = %d",sheaderFin[nombreDeSection-1]->sh_size);
 
     return headerFin;
 }
@@ -326,29 +341,32 @@ int main(int argc, char *argv[]){
     Elf32_Sym * symTableFin[sheader1[symTabNum]->sh_size/sizeof(Elf32_Sym) + sheader2[symTabNum2]->sh_size/sizeof(Elf32_Sym)];
     int nbSymboles;
     int tailleSTRTAB;
-    mergeSymAndStr(strTab1, strTab2, symTable1, symTable2,  strTabFin, symTableFin, symt1, symt2,&tailleSTRTAB,&nbSymboles);
-    
+    int nouveauxIndices[symt2];
+    mergeSymAndStr(strTab1, strTab2, symTable1, symTable2,  strTabFin, symTableFin, symt1, symt2,&tailleSTRTAB,&nbSymboles, nouveauxIndices);
+    for(int k = 0; k < symt2;k++){
+        printf("%d : %d\n", k, nouveauxIndices[k]);
+    }
     //Fusion des sections
   
     Elf32_Shdr * sheaderFinTmp[header1->e_shnum + header2->e_shnum];
     
-    int nombreDeSection=mergeSheader(sheader1, *header1, sheader2, *header2, sheaderFinTmp,nbSymboles,tailleSTRTAB, symTableFin, strTabFin, dest, src1, src2, strTabSection1, strTabSection2);
-    printf("ca_sort\n");
+    int nombreDeSection=mergeSheader(sheader1, *header1, sheader2, *header2, sheaderFinTmp,nbSymboles,tailleSTRTAB, symTableFin, strTabFin, dest, src1, src2, strTabSection1, strTabSection2, nouveauxIndices);
+    // printf("ca_sort\n");
     fflush(stdout);
     Elf32_Shdr * sheaderFin[nombreDeSection];
     for(int i=0; i<nombreDeSection;i++){
         sheaderFin[i]=sheaderFinTmp[i];
     }
-    printf("pos avant sheader : %ld\n",ftell(dest));
+    // printf("pos avant sheader : %ld\n",ftell(dest));
     ecrireSheader(sheaderFin, dest, nombreDeSection);
     fseek(dest,0,SEEK_END);
-    printf("pos fin sheader : %ld\n",sizeof(sheaderFin));
+    // printf("pos fin sheader : %ld\n",sizeof(sheaderFin));
     //Creation du ELFHeader
     Elf32_Ehdr headerFin = createElfHeader(sheaderFin, *header1, nombreDeSection);
     ecrireHeader(&headerFin, dest);
     fseek(dest,0,SEEK_END);
-    printf("pos fin sheader : %ld\n",ftell(dest));
-    printf("taille : %ld",sizeof(Elf32_Shdr));
+    // printf("pos fin sheader : %ld\n",ftell(dest));
+    // printf("taille : %ld",sizeof(Elf32_Shdr));
     
 
     ////////////

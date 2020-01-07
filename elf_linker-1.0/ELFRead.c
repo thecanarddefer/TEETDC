@@ -34,7 +34,7 @@ int main(int argc, char *argv[]){
       printf(" /// section HEADER TABLE /// \n");
       printf("\n");
 
-      afficherTableSectionHeader(src,*header,sheader);
+      lectureTableSectionHeader(src,*header,sheader);
       printf("\n");
       printf(" /// section ELF /// \n");
       printf("\n");
