@@ -2,13 +2,14 @@
 #include <elf.h>
 #include <stdlib.h>
 #include "partie2.h"
+#include "partie3.h"
 #include "partie5.h"
 
 
 
 
 void printTypeReloc(Elf32_Word r_info){
-	printf("R_ARM_");
+	printf("R_ARM_");// affiche le type de relocation
 	switch(ELF32_R_TYPE(r_info)){
     		case R_ARM_NONE: 	printf("NONE		");break;//0
     		case R_ARM_PC24: 	printf("PC24		");break;
@@ -48,123 +49,113 @@ void printTypeReloc(Elf32_Word r_info){
 } 
  
 
-void  afficherRelTables(int nbreloc,Elf32_Rel ** relTable, Elf32_Ehdr header,Elf32_Sym ** STable,char * strTab){
-	printf(" Offset\t\t");
+void  afficherRelTables(reloc * relTable, Elf32_Ehdr header,Elf32_Sym ** STable,char * strTab){
+	printf(" Offset\t\t");//affiche les colonne de la table des relocations
     	printf("Info\t\t");
     	printf("Type\t\t\t");
     	printf("Sym.val\t\t");
     	printf("Sym.nom\t\n");
-        for (int j=0; j<nbreloc;j++){
+        for (int j=0; j<relTable->nbreloc;j++){//boucle sur les relocation
             	//r_offset
-            	printf("%08X \t",relTable[j]->r_offset);
+            	printf("%08X \t",relTable->tab[j]->r_offset);
 		// r_info
-            	printf("%08X \t",relTable[j]->r_info);
+            	printf("%08X \t",relTable->tab[j]->r_info);
 		// type
-		printTypeReloc(relTable[j]->r_info);
+		printTypeReloc(relTable->tab[j]->r_info);
 		//sym.val
-		printf("0x%08X\t",STable[ELF32_R_SYM(relTable[j]->r_info)]->st_value);
+		printf("0x%08X\t",STable[ELF32_R_SYM(relTable->tab[j]->r_info)]->st_value);
 		//sym.nom
-		int k = STable[ELF32_R_SYM(relTable[j]->r_info)]->st_name;
-        	while(strTab[k] != '\0'){
+		int k = STable[ELF32_R_SYM(relTable->tab[j]->r_info)]->st_name;
+        	while(strTab[k] != '\0'){// affiche le nom du symbole
           		printf("%c", strTab[k]);
           		k++;
         		}
         	printf("\n");
-            //Elf32_word r_info
-            //printf("\tinfo : %d\n",laTable->relTable[i].r_info);
            	}
         
     }
 
 
-void  afficherRelaTables(int nbreloc,Elf32_Rela ** relaTable, Elf32_Ehdr header){
-	int j=0;
-	while (j<nbreloc){
-            
-            //Elf32_Addr r_offset
-            	printf("Relocation numéro : %d",j);
-            	printf("\tOffset : %x\n",relaTable[j]->r_offset);
-            //Elf32_word r_info
-            //printf("\tinfo : %d\n",laTable->relTable[i].r_info);
-            	j++;
-	}
-        
-}
 
-void getRelTable (FILE * fp, Elf32_Ehdr header, Elf32_Shdr ** sheader,Elf32_Sym ** STable,char * strTab){
-  	int nbreloc=0,nbreloca=0;
-    	int compteurRel=0 ,compteurRela=0;
+int nombre_reloc (Elf32_Ehdr header,Elf32_Shdr ** sheader){
+	// comptage des table de relocation( compteurRel)
+	int compteurRel=0;
     	for(int i=0;i<header.e_shnum;i++){
         	switch (sheader[i]->sh_type){
-            		case 9 : compteurRel++;nbreloc=(sheader[i]->sh_size/sizeof(Elf32_Rel));break;
-            		case 4 : compteurRela++;nbreloca=(sheader[i]->sh_size/sizeof(Elf32_Rela));break;
+            		case 9 : compteurRel++;break;
+            		default: break;
+        	}
+    	}
+	return compteurRel;
+}
+
+void info_reloc (Elf32_Ehdr header,Elf32_Shdr ** sheader,reloc ** relTable,FILE * fp){
+	int k=0 ;
+	for(int i=0;i<header.e_shnum;i++){//boucle sur les sections
+        	switch (sheader[i]->sh_type){//cherche celle de relocation
+            		case 9 : relTable[k]->nbreloc=(sheader[i]->sh_size/sizeof(Elf32_Rel));
+				relTable[k]->ind_sect=i;//met a jour leur nombres et leur index
+				char nom[20];
+				char* strTabSection = createStrTab(sheader, fp, header.e_shstrndx);
+				int j = sheader[i]->sh_name + 4 ,g=0;
+				while(strTabSection[j] != '\0'){ // cherche le nom de la section visée
+					nom[g]=strTabSection[j];
+	  				j++;
+					g++;
+				}
+				relTable[k]->dest=indice_section(nom,header,sheader,fp)-1;//trouve l'indice de la section visée
+				k++;break;
             		default: break;
         	}
     	}
 
+}
 
-    	Elf32_Rel * relTable[compteurRel][nbreloc];
-    	Elf32_Rela * relaTable[compteurRela][nbreloca];
+void affiche_toute_reloc(FILE * fp,reloc ** relTable, Elf32_Ehdr header, Elf32_Shdr **sheader,Elf32_Sym ** STable,char * strTab,int compteurRel){
+	for(int l=0;l<compteurRel;l++){//boucle sur les tables de relocation
+		printf(" \n");//affiche les information sur la table de relocation
+		printf("relocation section '");
+		char* strTabSection = createStrTab(sheader, fp, header.e_shstrndx);
+		int j = sheader[relTable[l]->ind_sect]->sh_name;
+		while(strTabSection[j] != '\0'){ // affiche le nom de la section de relocation
+			printf("%c", strTabSection[j]);
+			j++;
+		}
+		printf("' offset : 0x%x et contient %d entree",sheader[relTable[l]->ind_sect]->sh_offset,relTable[l]->nbreloc);
+		printf(" \n");
 
-    	for(int i=0;i<compteurRel;i++){
-        	for (int j=0;j<nbreloc;j++){
-            		relTable[i][j] = (Elf32_Rel*)malloc(sizeof(Elf32_Rel));
-           	 }
+		afficherRelTables(relTable[l],header,STable,strTab);//affiche les info sur les relocations
+	}
+	printf(" \n");
+}
+
+void getRelTable (FILE * fp, Elf32_Ehdr header, Elf32_Shdr ** sheader,Elf32_Sym ** STable,char * strTab,int compteurRel, reloc ** relTable){
+	
+	// allocation des tables de relocation
+	
+   	for(int i=0;i<compteurRel;i++){
+            		relTable[i] = (reloc *)malloc(sizeof(reloc));
     	}
-
-    	for(int i=0;i<compteurRela;i++){
-        	for (int j=0;j<nbreloca;j++){
-           		relaTable[i][j] = (Elf32_Rela*)malloc(sizeof(Elf32_Rela));
-            	}
-    	}
-
-
-    	compteurRel=0;
-    	compteurRela = 0;
-
-    	for(int i=0;i<header.e_shnum;i++){
-        	switch (sheader[i]->sh_type){
-            		case 9 :
-                		fseek(fp,sheader[i]->sh_offset,SEEK_SET);
-                		for (int j=0; j<nbreloc ;j++){
-                    			fread(relTable[compteurRel][j], 1,sizeof(Elf32_Rel),fp);
-                    		}
-				printf(" \n");
-        			printf("relocation section '");
-				char* strTabSection = malloc(sheader[header.e_shstrndx]->sh_size);
-    				strTabSection = createStrTab(sheader, fp, header.e_shstrndx);
-				int j = sheader[i]->sh_name;
-        			while(strTabSection[j] != '\0'){
-          				printf("%c", strTabSection[j]);
-          				j++;
-        			}
-				printf("' offset : 0x%x et contient %d entree",sheader[i]->sh_offset,nbreloc);
-        			printf(" \n");
-        			afficherRelTables(nbreloc, relTable[compteurRel],header,STable,strTab);
-                		compteurRel++;
-                		break;
-            
-            /*case 4 : 
-                fseek(fp,sheader[i]->sh_offset,SEEK_SET);
-                for (int j=0; j<nbreloca ;j++){
-                    fread(relaTable[compteurRela][j], 1,sizeof(Elf32_Rela),fp);
-                    }
-                compteurRela++;
-                break;*/
-
-            		default: 
-                		break;
-        	}
-    	}
-    /*for (int i=0;i<compteurRela;i++){
-        printf(" \n");
-        printf("table des relocation avec addent %d\n",i);
-        printf(" \n");
-        afficherRelaTables(nbreloca, relaTable[i],header);
-	}*/
-	if (compteurRel==0 && compteurRela==0){
+	if (compteurRel==0 ){//s'il n'y a pas de relocation
 		printf("il n'y a pas de relocation dans ce fichier\n");
 	}
+	
+	// lecture des relocation
+	else { 
+		info_reloc(header,sheader,relTable,fp);
+	    	for(int l=0;l<compteurRel;l++){//boucle sur les table de relocation
+			
+        		fseek(fp,sheader[relTable[l]->ind_sect]->sh_offset,SEEK_SET);
+			
+        		for (int j=0; j<(relTable[l]->nbreloc);j++){ // lit les relocations
+				relTable[l]->tab[j]=malloc(sizeof(Elf32_Rel));
+            			fread(relTable[l]->tab[j], 1,sizeof(Elf32_Rel),fp);
+            		}
+			
+		      
+	    	}
+		affiche_toute_reloc(fp,relTable,header,sheader,STable,strTab,compteurRel);
+	}	
 	
 }
 
