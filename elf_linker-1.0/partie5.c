@@ -158,7 +158,14 @@ void getRelTable (FILE * fp, Elf32_Ehdr header, Elf32_Shdr ** sheader,Elf32_Sym 
 	}	
 	
 }
-
+void freeReloc (reloc ** relTable, int compteurRel){
+	for(int i=0;i<compteurRel;i++){
+		for (int j=0; j<(relTable[i]->nbreloc);j++){ // lit les relocations
+			free(relTable[i]->tab[j]);
+		}
+            	free(relTable[i]);
+	}
+}
 
 
 

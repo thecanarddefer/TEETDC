@@ -44,9 +44,11 @@ void affiche_toute_reloc(FILE * fp,reloc ** relTable, Elf32_Ehdr header, Elf32_S
 	//Fonction :affiche toutes les tables de relocation
 	//Retour:none
 
+void freeReloc (reloc ** relTable, int compteurRel);
 
-
-
+	//Donnée :le pointeur de la table de relocation (relTable), le nombre de table de relocation (compteurRel)
+	//Fonction :libère la table de relocation
+	//Retour:None
 
 
 
