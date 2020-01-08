@@ -9,7 +9,7 @@ typedef struct {//structure de la table de relocation
 	Elf32_Rel * tab[1000];//information de relocation
 }  reloc;
 
-void  afficherRelTables(reloc * relTable, Elf32_Ehdr header,Elf32_Sym ** STable,char * strTab);
+void  afficherRelTables(reloc * relTable, Elf32_Ehdr header,Elf32_Shdr ** sheader,Elf32_Sym ** STable,char * strTab,FILE * fp);
 	//Donnée :table de relocation (relTable), l'entête du fichier (header), la table des symbole (STable), la table des nom de symbole (strTab)
 	//Fonction :afficher les relocation d'une table
 	//Retour:None
@@ -44,9 +44,11 @@ void affiche_toute_reloc(FILE * fp,reloc ** relTable, Elf32_Ehdr header, Elf32_S
 	//Fonction :affiche toutes les tables de relocation
 	//Retour:none
 
+void freeReloc (reloc ** relTable, int compteurRel);
 
-
-
+	//Donnée :le pointeur de la table de relocation (relTable), le nombre de table de relocation (compteurRel)
+	//Fonction :libère la table de relocation
+	//Retour:None
 
 
 
