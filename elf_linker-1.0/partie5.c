@@ -57,13 +57,13 @@ void  afficherRelTables(reloc * relTable, Elf32_Ehdr header,Elf32_Shdr ** sheade
     	printf("Noms-symboles\t\n");
         for (int j=0; j<relTable->nbreloc;j++){//boucle sur les relocation
             	//r_offset
-            	printf("%08X \t",relTable->tab[j]->r_offset);
+            	printf("%08x \t",relTable->tab[j]->r_offset);
 		// r_info
-            	printf("%08X \t",relTable->tab[j]->r_info);
+            	printf("%08x \t",relTable->tab[j]->r_info);
 		// type
 		printTypeReloc(relTable->tab[j]->r_info);
 		//sym.val
-		printf("%08X\t",STable[ELF32_R_SYM(relTable->tab[j]->r_info)]->st_value);
+		printf("%08x\t",STable[ELF32_R_SYM(relTable->tab[j]->r_info)]->st_value);
 		//sym.nom
 		unsigned char stinfo=STable[ELF32_R_SYM(relTable->tab[j]->r_info)]->st_info;
 		if (ELF32_ST_TYPE(stinfo)==STT_SECTION){//s'il s'agit d'une relocation de section

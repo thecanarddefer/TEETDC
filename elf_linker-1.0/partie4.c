@@ -76,7 +76,7 @@ void afficherTabSymb(Elf32_Sym ** STable, Elf32_Shdr** sheader, int symTabNum,ch
 		// num
        		printf("%d:\t",i);
 		// valeur
-        	printf("%08X\t",STable[i]->st_value);
+        	printf("%08x\t",STable[i]->st_value);
 		// taille
         	printf("%d\t",STable[i]->st_size);
 		// type

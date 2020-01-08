@@ -18,7 +18,7 @@ void printTableSection(FILE * fp, Elf32_Ehdr header, Elf32_Shdr ** sheader){
     printf("Type\t\t\t");
     printf("Adr\t\t");
     printf("Décala.\t");
-    printf("Tailles\t");
+    printf("Taille\t");
 	printf("ES\t");
     printf("Fan\t");
     printf("LN\t");

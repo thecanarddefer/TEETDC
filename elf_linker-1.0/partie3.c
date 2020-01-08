@@ -33,7 +33,7 @@ int indice_section(char* nom,Elf32_Ehdr header,Elf32_Shdr **sheader,FILE* fp){
 	
 void affiche_val_ASCII(uint8_t * contenu,int j,int i){
 	for (int e=j; e>0;e--){
-		if (contenu[i-e]<='~' && contenu[i-e]>='!'	){//affiche le caractère ascii si il est défini 
+		if (contenu[i-e]<='~' && contenu[i-e]>=' '	){//affiche le caractère ascii si il est défini 
 			printf("%c",contenu[i-e]);
 		}
 		else {
@@ -54,8 +54,7 @@ void alignement(int i){
 }
 
 void affichage_contenu_section (int num,Elf32_Ehdr header,Elf32_Shdr** sheader , FILE * f){
-    printf("section %d \n",num);//affiche le numeros de section
-	printf("\n");
+    printf("\n");
     if ((num >= header.e_shnum)||(num <0)){//si section inexistante
         printf("erreur section inexistante \n");
         printf("\n");
@@ -69,7 +68,6 @@ void affichage_contenu_section (int num,Elf32_Ehdr header,Elf32_Shdr** sheader ,
           		j++;
         	}
 		printf(" » :");
-		printf("\n");
         	if (sheader[num]->sh_size==0){//affiche si la section est vide
 			printf("\n");
             		printf("section vide\n");
@@ -92,7 +90,7 @@ void affichage_contenu_section (int num,Elf32_Ehdr header,Elf32_Shdr** sheader ,
 				if (i%4==0){//si on est a une fin de bloc(4 octets)
 					printf(" ");
 				}
-				printf("%02X",contenu[i]);//affiche l'octet sous forme hexadécimale
+				printf("%02x",contenu[i]);//affiche l'octet sous forme hexadécimale
 				i++;
 			}
 			printf(" ");
