@@ -7,6 +7,7 @@ void printInfoSymType(unsigned char info);
 	//Fonction :permet de print le type du symbole
 	//Retour:none
 
+
 void printInfoSymVisi(unsigned char info);
 	//Donnée : l'information sur le symbole sous forme binaire (info)
 	//Fonction :permet de print la visibilite du symbole
@@ -33,12 +34,25 @@ int findSymTab(Elf32_Shdr** sheader, int max);
 	
 
 void afficherTabSymb(Elf32_Sym ** STable, Elf32_Shdr** sheader, int symTabNum,char * strTab);
-	//permet d'afficher la table des symboles
+	//Donnée :le pointeur de la table des symbole (STable), le pointeur de la table des section (sheader),l'indice de la table des symbole (symTabNum),la table des nom de symbole(strTab)
+	//Fonction :permet d'afficher la table des symboles
+	//Retour:none
+
 
 int findStrTabSym(Elf32_Shdr** sheader, Elf32_Ehdr header);
 	//Donnée : le pointeur de la table des section (sheader),l'entête de fichier (header)
 	//Fonction :permet de trouver la table des noms de symbole
 	//Retour:l'indice de la table des nom de symbole
 
+
 void freeSymTab(Elf32_Sym ** STable,Elf32_Shdr** sheader,int symTabNum);
+	//Donnée :le pointeur de la table des symbole (STable), le pointeur de la table des section (sheader),l'indice de la table des symbole (symTabNum)
+	//Fonction :libère la table des symboles
+	//Retour:none
+
+
+
+
+
+
 

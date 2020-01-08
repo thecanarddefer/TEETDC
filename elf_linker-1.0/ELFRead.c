@@ -29,7 +29,6 @@ int main(int argc, char *argv[]){
 		printf(" /// HEADER ELF /// \n");
 		printf("\n");
 		header = elf_read_entete(src);//création du header
-		afficherheaderELF(header);//affichage du header
 		Elf32_Shdr *sheader[header->e_shnum];//création du sheader
 		printf("\n");
 		printf(" /// section HEADER TABLE /// \n");

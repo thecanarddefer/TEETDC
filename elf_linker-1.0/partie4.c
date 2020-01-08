@@ -64,19 +64,19 @@ void printInfoSymVisi(unsigned char info){
 }
 
 void afficherTabSymb(Elf32_Sym ** STable, Elf32_Shdr** sheader, int symTabNum,char * strTab){
-    	printf("Num\t");// affiche les colonnes de la table des symboles
+    	printf("Num:\t");// affiche les colonnes de la table des symboles
     	printf("Valeur\t\t");
-    	printf("Taille\t");
+    	printf("Tail\t");
     	printf("Type\t");
     	printf("Lien\t");
-	printf("Visi\t\t");
+	printf("Vis\t\t");
     	printf("Ndx\t");
     	printf("Nom\t\n");
     	for(int i=0; i<sheader[symTabNum]->sh_size/sizeof(Elf32_Sym);i++){//boucle sur les symboles
 		// num
-       		printf("%d\t",i);
+       		printf("%d:\t",i);
 		// valeur
-        	printf("0x%08X\t",STable[i]->st_value);
+        	printf("%08X\t",STable[i]->st_value);
 		// taille
         	printf("%d\t",STable[i]->st_size);
 		// type

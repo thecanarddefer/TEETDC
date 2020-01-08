@@ -12,20 +12,22 @@ char * createStrTab(Elf32_Shdr** sheader, FILE * fp, Elf32_Half num){
 }
 
 void printTableSection(FILE * fp, Elf32_Ehdr header, Elf32_Shdr ** sheader){
-    printf("Num\t");// affichage des colonnes de la table des sections
+	printf("En-têtes de section :\n");
+    printf("[Nr]\t");// affichage des colonnes de la table des sections
     printf("Nom\t\t\t");
     printf("Type\t\t\t");
-    printf("@virt\t");
-    printf("Off\t");
-    printf("Tail\t");
-    printf("Link\t");
-    printf("Info\t");
-    printf("Align\t");
-    printf("TailTab\t");
-    printf("Flag\n");
+    printf("Adr\t\t");
+    printf("Décala.\t");
+    printf("Tailles\t");
+	printf("ES\t");
+    printf("Fan\t");
+    printf("LN\t");
+    printf("Inf\t");
+    printf("Al\t");
+	printf("\n");
     char* strTabSection = createStrTab(sheader, fp, header.e_shstrndx);// recuperation de la table des noms de section
     for(int i=0;i<header.e_shnum;i++){// boucle sur chaque section
-        printf("%d \t",i);
+        printf("[%d] \t",i);
         int j = sheader[i]->sh_name;
         while(strTabSection[j] != '\0'){ // affiche le nom de la section
           printf("%c", strTabSection[j]);
@@ -37,14 +39,14 @@ void printTableSection(FILE * fp, Elf32_Ehdr header, Elf32_Shdr ** sheader){
         }
         printf("\t");//affichage des données de chaque colonne
         printSh_Type(sheader[i]->sh_type);
-        printf("%d \t",sheader[i]->sh_addr);
-        printf("%X \t",sheader[i]->sh_offset);
-        printf("%d \t",sheader[i]->sh_size);
+        printf("%08x \t",sheader[i]->sh_addr);
+        printf("%06x \t",sheader[i]->sh_offset);
+        printf("%06x \t",sheader[i]->sh_size);
+		printf("%02x \t",sheader[i]->sh_entsize);
+        printFlagz(sheader[i]->sh_flags);
         printf("%d \t",sheader[i]->sh_link);
         printf("%d \t",sheader[i]->sh_info);
         printf("%d \t",sheader[i]->sh_addralign);
-        printf("%d \t",sheader[i]->sh_entsize);
-        printFlagz(sheader[i]->sh_flags);
         
 	      printf("\n");
     }
@@ -53,11 +55,11 @@ void printTableSection(FILE * fp, Elf32_Ehdr header, Elf32_Shdr ** sheader){
 }
 
 void printKeyFlags(){
-	printf("Key to flag :\n");// affiche la définition des abréviations de flag
-	printf("  W (write), A (alloc), X (execute), M (merge), S (strings), I (info),\n");
-  	printf("  L (link order), O (extra OS processing required), G (group), T (TLS),\n");
-  	printf("  C (compressed), x (unknown), o (OS specific), E (exclude),\n");
-  	printf("  y (noread), p (processor specific)\n");
+	printf("Clé des fanions :\n");// affiche la définition des abréviations de flag
+	printf("  W (écriture), A (allocation), X (exécution), M (fusion), S (chaînes), I (info),\n");
+  	printf("  L (ordre des liens), O (traitement supplémentaire par l'OS requis), G (groupe),\n");
+  	printf("  T (TLS), C (compressé), x (inconnu), o (spécifique à l'OS), E (exclu),\n");
+  	printf("  y (purecode), p (processor specific)\n");
 }
 
 void lectureTableSectionHeader(FILE * fp, Elf32_Ehdr header, Elf32_Shdr ** sheader){
