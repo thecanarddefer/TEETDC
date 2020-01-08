@@ -39,4 +39,6 @@ int findStrTabSym(Elf32_Shdr** sheader, Elf32_Ehdr header);
 	//Donnée : le pointeur de la table des section (sheader),l'entête de fichier (header)
 	//Fonction :permet de trouver la table des noms de symbole
 	//Retour:l'indice de la table des nom de symbole
-	
+
+void freeSymTab(Elf32_Sym ** STable,Elf32_Shdr** sheader,int symTabNum);
+
