@@ -18,12 +18,12 @@ int indice_section(char* nom,Elf32_Ehdr header,Elf32_Shdr **sheader,FILE* fp){
 				iden=0;}
           		j++;
 			k++;
-        }
-        i++;
+		}
+		i++;
 	}
 	if (iden){//s'il y a eu concordance
 		free(strTabSection);//libere la table des noms de section
-        	return i;
+        	return i-1;
 	}
 	else {//s'il n'y a pas eu concordance
 		free(strTabSection);//libere la table des noms de section
@@ -35,7 +35,6 @@ int indice_section(char* nom,Elf32_Ehdr header,Elf32_Shdr **sheader,FILE* fp){
 void affichage_contenu_section (int num,Elf32_Ehdr header,Elf32_Shdr** sheader , FILE * f){
     printf("section %d \n",num);//affiche le numeros de section
 	printf("\n");
-    num--;
     if ((num >= header.e_shnum)||(num <0)){//si section inexistante
         printf("erreur section inexistante \n");
         printf("\n");

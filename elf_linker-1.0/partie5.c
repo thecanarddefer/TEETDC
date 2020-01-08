@@ -114,7 +114,7 @@ void info_reloc (Elf32_Ehdr header,Elf32_Shdr ** sheader,reloc ** relTable,FILE 
 	  				j++;
 					g++;
 				}
-				relTable[k]->dest=indice_section(nom,header,sheader,fp)-1;//trouve l'indice de la section visée
+				relTable[k]->dest=indice_section(nom,header,sheader,fp);//trouve l'indice de la section visée
 				k++;break;
             		default: break;
         	}

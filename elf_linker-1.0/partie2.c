@@ -25,7 +25,7 @@ void printTableSection(FILE * fp, Elf32_Ehdr header, Elf32_Shdr ** sheader){
     printf("Flag\n");
     char* strTabSection = createStrTab(sheader, fp, header.e_shstrndx);// recuperation de la table des noms de section
     for(int i=0;i<header.e_shnum;i++){// boucle sur chaque section
-        printf("%d \t",i+1);
+        printf("%d \t",i);
         int j = sheader[i]->sh_name;
         while(strTabSection[j] != '\0'){ // affiche le nom de la section
           printf("%c", strTabSection[j]);
