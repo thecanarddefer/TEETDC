@@ -66,7 +66,7 @@ void  afficherRelTables(reloc * relTable, Elf32_Ehdr header,Elf32_Shdr ** sheade
 		printf("%08X\t",STable[ELF32_R_SYM(relTable->tab[j]->r_info)]->st_value);
 		//sym.nom
 		unsigned char stinfo=STable[ELF32_R_SYM(relTable->tab[j]->r_info)]->st_info;
-		if (ELF32_ST_TYPE(stinfo)==STT_SECTION){
+		if (ELF32_ST_TYPE(stinfo)==STT_SECTION){//s'il s'agit d'une relocation de section
 			char* strTabSection = createStrTab(sheader, fp, header.e_shstrndx);
 			Elf32_Section shndx=STable[ELF32_R_SYM(relTable->tab[j]->r_info)]->st_shndx;
 			int j = sheader[shndx]->sh_name;
@@ -74,6 +74,7 @@ void  afficherRelTables(reloc * relTable, Elf32_Ehdr header,Elf32_Shdr ** sheade
           			printf("%c", strTabSection[j]);
           			j++;
         		}
+			free(strTabSection);
 		}else{
 			int k = STable[ELF32_R_SYM(relTable->tab[j]->r_info)]->st_name;
 			while(strTab[k] != '\0'){// affiche le nom du symbole
