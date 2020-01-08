@@ -1,13 +1,10 @@
 #include <stdio.h>
 #include <elf.h>
 #include <stdlib.h>
-#include "partie1.h"
-#include "partie2.h"
-#include "partie3.h"
-#include "partie4.h"
-#include "partie5.h"
+#include "ELFusion.h"
 
 int isMergeable(Elf32_Word type){
+//Si les sections sont des trypes suivants, il faut les fusionner
     switch(type){
         case(SHT_NULL): return 1;
         case(SHT_PROGBITS): return 1;
@@ -17,9 +14,9 @@ int isMergeable(Elf32_Word type){
     }
     return 0;
 }
+//////////// Fonctions d'écriture dans le nouveau fichier
 void ecrireSheader(Elf32_Shdr ** sheader, FILE * dest, int nombreDeSection){
     fseek(dest, 0, SEEK_END);
-    // printf("pos ecriture sheader: %ld\n",ftell(dest)+52);
     for(int i = 0; i < nombreDeSection;i++){
         fwrite(sheader[i], sizeof(Elf32_Shdr), 1, dest);
     }
@@ -31,20 +28,16 @@ void ecrireHeader(Elf32_Ehdr * header1, FILE * dest){
 }
 
 void ecrireSectionSymbole(FILE * dest, Elf32_Sym ** symTab, int nbSymbole){
-    // printf("pos ecriture section sym: %ld\n",ftell(dest)+52);
-
     for(int i = 0; i < nbSymbole;i++){
         fwrite(symTab[i], sizeof(Elf32_Sym), 1, dest);
     }
 }
 
 void ecrireSectionStringSymbole(FILE * dest, char * strTabSym, int tailleSTRTAB){
-    // printf("pos ecriture string sec sym: %ld\n",ftell(dest)+52);
     fwrite(strTabSym, tailleSTRTAB, 1, dest);
 }
 
 void ecrireSection(FILE * dest, FILE * src, Elf32_Shdr ** sheader, int indice){
-    // printf("pos ecriture section num %d %ld Size : %d\n",indice, ftell(dest)+52, sheader[indice]->sh_size);
     uint8_t contenu[sheader[indice]->sh_size];
     fseek(src, sheader[indice]->sh_offset, SEEK_SET);
     fread(contenu, 1,sheader[indice]->sh_size, src);
@@ -55,6 +48,7 @@ void ecrireSectionMergeable(FILE * dest, FILE * src1, FILE * src2, Elf32_Shdr **
     ecrireSection(dest, src1, sheader1, indice1);
     ecrireSection(dest, src2, sheader2, indice2);
 }
+//////////////////////////////
 void printSheader(Elf32_Shdr ** sheaderFin, int count){
     for(int i = 0; i < count;i++){
         printf("Num : %d   ", i);
@@ -64,11 +58,12 @@ void printSheader(Elf32_Shdr ** sheaderFin, int count){
     }
 }
 
-
 char * getNomSymboles(Elf32_Word name,char* strTab, int taille){
     int compteur =name;
     char nom[taille];
     int taillefinale=0;
+    //On part de l'indice donné qui pointe dans la table des chaines ;
+    //on rentre tous les caractères dans une nouvelle chaine tant qu'on ne rencontre pas le caractère final \0
     while(strTab[compteur]!='\0'){
         nom[taillefinale]=strTab[compteur];
         taillefinale++;
@@ -81,6 +76,7 @@ char * getNomSymboles(Elf32_Word name,char* strTab, int taille){
     nomFinal[taillefinale+1] = '\0';
     return nomFinal;
 }
+
 int memeString(char* s1, char * s2){
     int i = 0;
     while(s1[i] == s2[i] && (s2[i] != '\0' || s1[i] != '\0')){
@@ -93,19 +89,40 @@ int memeString(char* s1, char * s2){
         return 0;
     }
 }
-// void mergeRelocationTable(Elf32_Shdr ** sheader1,Elf32_Shdr ** sheader2, indice1, indice2, char * strTabSymFinale, char * strTabSym2, char* strTabSection1, FILE * src1, FILE * src2 ){
-//     //via indice 1 copier src1 dest
+ void mergeRelocationTable(Elf32_Shdr ** sheader1,Elf32_Shdr ** sheader2, int indice1, int indice2,char* strTabSection1, char* strTabSection2, FILE * src1, FILE * dest, reloc **relTable, int* nouveauxIndices,  int compteurRel, int nbSection1){
+    //via indice 1 copier src1 dest
+    ecrireSection(dest, src1, sheader1, indice1);
+    int count=0;
+    int offsetAAjouter;
+    while(count< compteurRel && relTable[count]->ind_sect!=indice2){
+       count++;
+    }
+    int sectionCible = relTable[count]->dest;
+    char * nomSect = getNomSymboles(sheader2[sectionCible]->sh_name,strTabSection2, 50);
+    int j=0;
+    while(j<nbSection1 &&!memeString(nomSect,getNomSymboles(sheader1[j]->sh_name, strTabSection1, 50))){
+        j++;
+    }
+    offsetAAjouter= sheader1[j]->sh_size - sheader2[sectionCible]->sh_size;
+    for(int i=0; i< relTable[count]->nbreloc;i++){
+        printf("offset : %d",offsetAAjouter);
+        relTable[count]->tab[i]->r_offset += offsetAAjouter;
+        int sym = nouveauxIndices[ELF32_R_SYM(relTable[count]->tab[i]->r_info)];
+        int type = ELF32_R_TYPE(relTable[count]->tab[i]->r_info);
+        relTable[count]->tab[i]->r_info = ELF32_R_INFO(sym,type);
+        fwrite(relTable[count]->tab[i], sizeof(Elf32_Rel), 1, dest);
+    }
+    
 
-//     //sheader2->indice->sh_name->strTabSection1 trouver taille sheader1
-//     //iterer sur sheader2 indice2 : ajouter taille sheader1 a l'offset , trouver le numero de symbole
-//     //
+     //sheader2->indice->sh_name->strTabSection1 trouver taille sheader1
+     //iterer sur sheader2 indice2 : ajouter taille sheader1 a l'offset , trouver le numero de symbole
+     //
 
 
-// }
+ }
 
-int mergeSheader(Elf32_Shdr ** sheader1, Elf32_Ehdr header1, Elf32_Shdr ** sheader2, Elf32_Ehdr header2, Elf32_Shdr ** sheaderFin, int nbSymbole, int tailleSTRTAB, Elf32_Sym ** symTab, char * strTabSym, FILE * dest, FILE * src1, FILE * src2, char* strTabSection1, char* strTabSection2, int* nouveauxIndices){
+int mergeSheader(Elf32_Shdr ** sheader1, Elf32_Ehdr header1, Elf32_Shdr ** sheader2, Elf32_Ehdr header2, Elf32_Shdr ** sheaderFin, int nbSymbole, int tailleSTRTAB, Elf32_Sym ** symTab, char * strTabSym, FILE * dest, FILE * src1, FILE * src2, char* strTabSection1, char* strTabSection2, int* nouveauxIndices, reloc **relTable,  int compteurRel){
     int count = 0;
-    //int decalage = 0;
     int offset = 52; //test avec un offset set a la taille du header
     int j;
     for(int i=0; i<header1.e_shnum;i++){
@@ -117,25 +134,23 @@ int mergeSheader(Elf32_Shdr ** sheader1, Elf32_Ehdr header1, Elf32_Shdr ** shead
                 j++;
             }
             if(j!=header2.e_shnum){
-               // printf("sh_link1=%d\n",sheader1[i]->sh_link);
-                sheaderFin[i]=sheader1[i];//Attention PE mauvaise copie!!!!!!!!!!!!!!!!!!!!!!!!!!
-                //printf("sh_link2=%d\n",sheaderFin[i]->sh_link);
+                sheaderFin[i]=sheader1[i];
                 int tmpsize =sheader1[i]->sh_size;
                 
 
                 if(sheaderFin[i]->sh_type==SHT_SYMTAB){
                     sheaderFin[i]->sh_size= sizeof(Elf32_Sym)*nbSymbole;
-                    //decalage+= sizeof(Elf32_Sym)*nbSymbole-tmpsize;
                     ecrireSectionSymbole(dest,symTab, nbSymbole);
 
                 }else if(sheaderFin[i]->sh_type==SHT_STRTAB && i!= header1.e_shstrndx){
                     sheaderFin[i]->sh_size=tailleSTRTAB;
-                    //decalage+= tailleSTRTAB-tmpsize;
                     ecrireSectionStringSymbole(dest, strTabSym, tailleSTRTAB);
                 }
+                else if(sheaderFin[i]->sh_type==SHT_REL){    
+                    mergeRelocationTable(sheader1,sheader2,i,j,strTabSection1,strTabSection2, src1, dest, relTable, nouveauxIndices, compteurRel, header1.e_shnum);
+                    sheaderFin[i]->sh_size+=sheader2[j]->sh_size;
+                }
                 else{
-                    // printf("????????????? size sec merg 1 : %d size sec merge 2 : %d\n",sheaderFin[i]->sh_size, sheader2[j]->sh_size);
-                    //decalage+=sheader2[j]->sh_size;
                     ecrireSectionMergeable(dest, src1, src2, sheader1, sheader2, i, j);
                     sheaderFin[i]->sh_size+=sheader2[j]->sh_size;
                 }     
@@ -160,13 +175,11 @@ int mergeSheader(Elf32_Shdr ** sheader1, Elf32_Ehdr header1, Elf32_Shdr ** shead
             ecrireSection(dest, src1, sheader1, i);
         }
         sheaderFin[i]->sh_offset=offset;
-        // printf("offset : %d\n", offset);
         offset+=sheaderFin[i]->sh_size;
         
         count++;
         
     }
-    //decalage = sheaderFin[header1.e_shnum - 1]->sh_offset + sheaderFin[header1.e_shnum - 1]->sh_size;
     for(int i=0; i<header2.e_shnum;i++){
         j=0;
         while(sheader2[i]->sh_name =!sheaderFin[j]->sh_name && j<header1.e_shnum){
@@ -175,7 +188,6 @@ int mergeSheader(Elf32_Shdr ** sheader1, Elf32_Ehdr header1, Elf32_Shdr ** shead
         if(j==header1.e_shnum){
             sheaderFin[count]=sheader2[i];
             sheaderFin[count]->sh_offset=offset;
-            //decalage+=sheader2[i]->sh_size;
             sheaderFin[count]->sh_name+=sheader1[header1.e_shstrndx]->sh_size;
             if(sheaderFin[count]->sh_type==SHT_REL ){
                 sheaderFin[count]->sh_link=header1.e_shstrndx;
@@ -201,15 +213,9 @@ void mergeSymAndStr(char* strTab1,char* strTab2,Elf32_Sym ** symTable1,Elf32_Sym
             strTabFin[(*compteurSTRTAB)]=strTab1[l];
             l++;
             (*compteurSTRTAB)++;
-            
-
-        }
-        
+        } 
             strTabFin[(*compteurSTRTAB)]='\0';
             (*compteurSTRTAB)++;
-        
-        
-
     }
     
     (*count)=t1;
@@ -272,9 +278,6 @@ Elf32_Ehdr createElfHeader(Elf32_Shdr ** sheaderFin, Elf32_Ehdr header1, int nom
     Elf32_Ehdr headerFin = header1;
     headerFin.e_shnum = nombreDeSection;
     headerFin.e_shoff = sheaderFin[nombreDeSection-1]->sh_offset + sheaderFin[nombreDeSection-1]->sh_size;
-    // printf("OFFSET = %d",sheaderFin[nombreDeSection-1]->sh_offset);
-    // printf("SIZE   = %d",sheaderFin[nombreDeSection-1]->sh_size);
-
     return headerFin;
 }
 
@@ -347,10 +350,16 @@ int main(int argc, char *argv[]){
         printf("%d : %d\n", k, nouveauxIndices[k]);
     }
     //Fusion des sections
-  
+    
+    int compteurRel=nombre_reloc(*header2,sheader2);
+	reloc *relTable[compteurRel];
+
+ 	getRelTable(src2,*header2,sheader2,symTable2,strTab2,compteurRel,relTable );
+
+
     Elf32_Shdr * sheaderFinTmp[header1->e_shnum + header2->e_shnum];
     
-    int nombreDeSection=mergeSheader(sheader1, *header1, sheader2, *header2, sheaderFinTmp,nbSymboles,tailleSTRTAB, symTableFin, strTabFin, dest, src1, src2, strTabSection1, strTabSection2, nouveauxIndices);
+    int nombreDeSection=mergeSheader(sheader1, *header1, sheader2, *header2, sheaderFinTmp,nbSymboles,tailleSTRTAB, symTableFin, strTabFin, dest, src1, src2, strTabSection1, strTabSection2, nouveauxIndices ,relTable,compteurRel);
     // printf("ca_sort\n");
     fflush(stdout);
     Elf32_Shdr * sheaderFin[nombreDeSection];
