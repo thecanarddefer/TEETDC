@@ -46,14 +46,14 @@ int memeString(char* s1, char * s2);
 	//Fonction : savoir si les 2 chaînes sont identiques
 	//Retour: 1 ou 0
   
-void mergeRelocationTable(Elf32_Shdr ** sheader1,Elf32_Shdr ** sheader2, int indice1, int indice2,char* strTabSection1, char* strTabSection2, FILE * src1, FILE * dest, reloc **relTable, int* nouveauxIndices,  int compteurRel, int nbSection1);
+void mergeRelocationTable(Elf32_Shdr ** sheader1,Elf32_Shdr ** sheader2, int indice1, int indice2,char* strTabSection1, char* strTabSection2, FILE * src1, FILE * dest, reloc **relTable, int* nouveauxIndices,  int compteurRel, int nbSection1, int * indicesFich1, reloc **relTable1, int compteurRel1);
     //Donnée : 2 chaînes de caractères s1 et s2
 	//Fonction : savoir si les 2 chaînes sont identiques
 	//Retour: 1 ou 0
 
-int mergeSheader(Elf32_Shdr ** sheader1, Elf32_Ehdr header1, Elf32_Shdr ** sheader2, Elf32_Ehdr header2, Elf32_Shdr ** sheaderFin, int nbSymbole, int tailleSTRTAB, Elf32_Sym ** symTab, char * strTabSym, FILE * dest, FILE * src1, FILE * src2, char* strTabSection1, char* strTabSection2, int* nouveauxIndices, reloc **relTable,  int compteurRel);
+int mergeSheader(Elf32_Shdr ** sheader1, Elf32_Ehdr header1, Elf32_Shdr ** sheader2, Elf32_Ehdr header2, Elf32_Shdr ** sheaderFin, int nbSymbole, int tailleSTRTAB, Elf32_Sym ** symTab, char * strTabSym, FILE * dest, FILE * src1, FILE * src2, char* strTabSection1, char* strTabSection2, int* nouveauxIndices, reloc **relTable,  int compteurRel, int * indicesFich1, reloc **relTable1,  int compteurRel1, int lastLocalSym);
   
-void mergeSymAndStr(char* strTab1,char* strTab2,Elf32_Sym ** symTable1,Elf32_Sym ** symTable2, char * strTabFin, Elf32_Sym ** symTableFin, int t1, int t2, int * compteurSTRTAB, int * count, int* nouveauxIndices);
+int mergeSymAndStr(char* strTab1,char* strTab2,Elf32_Sym ** symTable1,Elf32_Sym ** symTable2, char * strTabFin, Elf32_Sym ** symTableFin, int t1, int t2, int * compteurSTRTAB, int * count, int* nouveauxIndices, int * indicesFich1);
 
 Elf32_Ehdr createElfHeader(Elf32_Shdr ** sheaderFin, Elf32_Ehdr header1, int nombreDeSection);
     //Donnée : le header du fichier 1, la table des section du fichier fusionné sheaderFin et le nombre de sections final

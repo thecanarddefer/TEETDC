@@ -62,7 +62,7 @@ char * getNomSymboles(Elf32_Word name,char* strTab, int taille){
     int compteur =name;
     char nom[taille];
     int taillefinale=0;
-    //On part de l'indice donné qui pointe dans la table des chaines ;
+    //On part de l'indice donné qui pointe dans la table des chaines 
     //on rentre tous les caractères dans une nouvelle chaine tant qu'on ne rencontre pas le caractère final \0
     while(strTab[compteur]!='\0'){
         nom[taillefinale]=strTab[compteur];
@@ -89,10 +89,25 @@ int memeString(char* s1, char * s2){
         return 0;
     }
 }
- void mergeRelocationTable(Elf32_Shdr ** sheader1,Elf32_Shdr ** sheader2, int indice1, int indice2,char* strTabSection1, char* strTabSection2, FILE * src1, FILE * dest, reloc **relTable, int* nouveauxIndices,  int compteurRel, int nbSection1){
+ void mergeRelocationTable(Elf32_Shdr ** sheader1,Elf32_Shdr ** sheader2, int indice1, int indice2,char* strTabSection1, char* strTabSection2, FILE * src1, FILE * dest, reloc **relTable, int* nouveauxIndices,  int compteurRel, int nbSection1, int * indicesFich1, reloc **relTable1, int compteurRel1){
     //via indice 1 copier src1 dest
-    ecrireSection(dest, src1, sheader1, indice1);
+    printf("Debut merge reloc1");
+    fflush(stdout);
+
     int count=0;
+    while(count< compteurRel1 && relTable1[count]->ind_sect!=indice1){
+       count++;
+    }
+     for(int i=0; i< relTable1[count]->nbreloc;i++){
+        int sym = indicesFich1[ELF32_R_SYM(relTable1[count]->tab[i]->r_info)];
+        int type = ELF32_R_TYPE(relTable1[count]->tab[i]->r_info);
+        relTable1[count]->tab[i]->r_info = ELF32_R_INFO(sym,type);
+        fwrite(relTable1[count]->tab[i], sizeof(Elf32_Rel), 1, dest);
+    }
+
+    fflush(stdout);
+    //ecrireSection(dest, src1, sheader1, indice1);
+    count=0;
     int offsetAAjouter;
     while(count< compteurRel && relTable[count]->ind_sect!=indice2){
        count++;
@@ -112,7 +127,8 @@ int memeString(char* s1, char * s2){
         relTable[count]->tab[i]->r_info = ELF32_R_INFO(sym,type);
         fwrite(relTable[count]->tab[i], sizeof(Elf32_Rel), 1, dest);
     }
-    
+    printf("fin merge reloc2\n");
+
 
      //sheader2->indice->sh_name->strTabSection1 trouver taille sheader1
      //iterer sur sheader2 indice2 : ajouter taille sheader1 a l'offset , trouver le numero de symbole
@@ -121,12 +137,11 @@ int memeString(char* s1, char * s2){
 
  }
 
-int mergeSheader(Elf32_Shdr ** sheader1, Elf32_Ehdr header1, Elf32_Shdr ** sheader2, Elf32_Ehdr header2, Elf32_Shdr ** sheaderFin, int nbSymbole, int tailleSTRTAB, Elf32_Sym ** symTab, char * strTabSym, FILE * dest, FILE * src1, FILE * src2, char* strTabSection1, char* strTabSection2, int* nouveauxIndices, reloc **relTable,  int compteurRel){
+int mergeSheader(Elf32_Shdr ** sheader1, Elf32_Ehdr header1, Elf32_Shdr ** sheader2, Elf32_Ehdr header2, Elf32_Shdr ** sheaderFin, int nbSymbole, int tailleSTRTAB, Elf32_Sym ** symTab, char * strTabSym, FILE * dest, FILE * src1, FILE * src2, char* strTabSection1, char* strTabSection2, int* nouveauxIndices, reloc **relTable,  int compteurRel, int * indicesFich1, reloc **relTable1,  int compteurRel1, int lastLocalSym){
     int count = 0;
-    int offset = 52; //test avec un offset set a la taille du header
+    int offset = 0; //test avec un offset set a la taille du header
     int j;
     for(int i=0; i<header1.e_shnum;i++){
-        
         if(isMergeable(sheader1[i]->sh_type)){
             j=0;
 
@@ -140,6 +155,7 @@ int mergeSheader(Elf32_Shdr ** sheader1, Elf32_Ehdr header1, Elf32_Shdr ** shead
 
                 if(sheaderFin[i]->sh_type==SHT_SYMTAB){
                     sheaderFin[i]->sh_size= sizeof(Elf32_Sym)*nbSymbole;
+                    sheaderFin[i]->sh_info = lastLocalSym;
                     ecrireSectionSymbole(dest,symTab, nbSymbole);
 
                 }else if(sheaderFin[i]->sh_type==SHT_STRTAB && i!= header1.e_shstrndx){
@@ -147,7 +163,7 @@ int mergeSheader(Elf32_Shdr ** sheader1, Elf32_Ehdr header1, Elf32_Shdr ** shead
                     ecrireSectionStringSymbole(dest, strTabSym, tailleSTRTAB);
                 }
                 else if(sheaderFin[i]->sh_type==SHT_REL){    
-                    mergeRelocationTable(sheader1,sheader2,i,j,strTabSection1,strTabSection2, src1, dest, relTable, nouveauxIndices, compteurRel, header1.e_shnum);
+                    mergeRelocationTable(sheader1,sheader2,i,j,strTabSection1,strTabSection2, src1, dest, relTable, nouveauxIndices, compteurRel, header1.e_shnum , indicesFich1, relTable1, compteurRel1);
                     sheaderFin[i]->sh_size+=sheader2[j]->sh_size;
                 }
                 else{
@@ -175,11 +191,17 @@ int mergeSheader(Elf32_Shdr ** sheader1, Elf32_Ehdr header1, Elf32_Shdr ** shead
             ecrireSection(dest, src1, sheader1, i);
         }
         sheaderFin[i]->sh_offset=offset;
-        offset+=sheaderFin[i]->sh_size;
+        if(offset==0){
+            offset=52;
+        }else{
+            offset+=sheaderFin[i]->sh_size;
+        }
+        
         
         count++;
         
     }
+
     for(int i=0; i<header2.e_shnum;i++){
         j=0;
         while(sheader2[i]->sh_name =!sheaderFin[j]->sh_name && j<header1.e_shnum){
@@ -200,35 +222,104 @@ int mergeSheader(Elf32_Shdr ** sheader1, Elf32_Ehdr header1, Elf32_Shdr ** shead
     //printTableSection(src1,header1,sheaderFin);
     // printSheader(sheaderFin, count);
     return count;
+
 }
 
-void mergeSymAndStr(char* strTab1,char* strTab2,Elf32_Sym ** symTable1,Elf32_Sym ** symTable2, char * strTabFin, Elf32_Sym ** symTableFin, int t1, int t2, int * compteurSTRTAB, int * count, int* nouveauxIndices){
+int mergeSymAndStr(char* strTab1,char* strTab2,Elf32_Sym ** symTable1,Elf32_Sym ** symTable2, char * strTabFin, Elf32_Sym ** symTableFin, int t1, int t2, int * compteurSTRTAB, int * count, int* nouveauxIndices, int * indicesFich1){
     (*compteurSTRTAB)=1;
     strTabFin[0]='\0';
+    //Ecriture des symboles locaux du premier fichier
     for(int i = 0; i < t1;i++){
-        symTableFin[i] = symTable1[i];
-        int l= symTableFin[i]->st_name;
-        symTableFin[i]->st_name=(*compteurSTRTAB);
-        while(strTab1[l]!='\0'){
-            strTabFin[(*compteurSTRTAB)]=strTab1[l];
-            l++;
+        if(ELF32_ST_BIND(symTable1[i]->st_info)!=1){
+            symTableFin[i] = symTable1[i];
+            int l= symTableFin[i]->st_name;
+         
+            symTableFin[i]->st_name=(*compteurSTRTAB);
+            while(strTab1[l]!='\0'){
+                strTabFin[(*compteurSTRTAB)]=strTab1[l];
+                l++;
+                (*compteurSTRTAB)++;
+               // printf("%d\n",*compteurSTRTAB);
+            } 
+            strTabFin[(*compteurSTRTAB)]='\0';
+            indicesFich1[i]=(*count);
             (*compteurSTRTAB)++;
-        } 
+            (*count)++;
+        }
+    }
+    printf("\nstring table 1 ");
+    for(int i = 0; i<(*compteurSTRTAB); i++){
+        printf("%c",strTabFin[i]);
+    }
+    //Ecriture des symboles locaux du deuxième fichier
+
+    for(int j = 0;j < t2;j++){
+        if(ELF32_ST_BIND(symTable2[j]->st_info)!=1){
+            symTableFin[(*count)]=symTable2[j];
+            int l= symTableFin[(*count)]->st_name;
+            
+
+            symTableFin[(*count)]->st_name=(*compteurSTRTAB);
+            while(strTab2[l]!='\0'){
+                strTabFin[(*compteurSTRTAB)]=strTab2[l];
+                l++;
+                (*compteurSTRTAB)++;
+                // printf("%d\n",*compteurSTRTAB);
+            }
+            strTabFin[(*compteurSTRTAB)]='\0';
+            nouveauxIndices[j]=(*count);
+            (*compteurSTRTAB)++;
+            (*count)++;
+            
+        }
+    }
+    printf("\nstring table 2 :");
+    for(int i = 0; i<(*compteurSTRTAB); i++){
+        printf("%c",strTabFin[i]);
+    }
+    int dernierlocal = (*count);
+    //Ecriture des symboles globaux du premier fichier
+
+    for(int i = 0; i < t1;i++){
+        if(ELF32_ST_BIND(symTable1[i]->st_info)==1){
+            symTableFin[(*count)] = symTable1[i];
+            int l= symTableFin[(*count)]->st_name;
+            symTableFin[(*count)]->st_name=(*compteurSTRTAB);
+         
+
+            while(strTab1[l]!='\0'){
+                strTabFin[(*compteurSTRTAB)]=strTab1[l];
+                l++;
+                (*compteurSTRTAB)++;
+             //    printf("%d\n",*compteurSTRTAB);
+            } 
+            indicesFich1[i]=(*count);
             strTabFin[(*compteurSTRTAB)]='\0';
             (*compteurSTRTAB)++;
+            (*count)++;
+
+        }
     }
-    
-    (*count)=t1;
+    printf("\nstring table 3 :");
+    for(int i = 0; i<(*compteurSTRTAB); i++){
+        printf("%c",strTabFin[i]);
+    }
+    //Ecriture des symboles globaux du deuxième fichier
+
     int k = 0;
     for(int j = 0;j < t2;j++){
         if(ELF32_ST_BIND(symTable2[j]->st_info)==1){
-            while(k<t1 && !memeString(getNomSymboles(symTable2[j]->st_name, strTab2, t2), getNomSymboles(symTableFin[k]->st_name, strTabFin, t1))){
+            while(k<(*count) && !memeString(getNomSymboles(symTable2[j]->st_name, strTab2, t2), getNomSymboles(symTableFin[k]->st_name, strTabFin, t1))){
+                printf("\n%s : %s\n", getNomSymboles(symTable2[j]->st_name, strTab2, t2), getNomSymboles(symTableFin[k]->st_name, strTabFin, t1));
                 k++;   
             }
             if(k==t1){
+                printf("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
                 symTableFin[(*count)]=symTable2[j];
                 int l= symTableFin[(*count)]->st_name;
                 symTableFin[(*count)]->st_name=(*compteurSTRTAB);
+            
+
                 while(strTab2[l]!='\0'){
                     strTabFin[(*compteurSTRTAB)]=strTab2[l];
                     l++;
@@ -236,17 +327,20 @@ void mergeSymAndStr(char* strTab1,char* strTab2,Elf32_Sym ** symTable1,Elf32_Sym
                 }
                 strTabFin[(*compteurSTRTAB)]='\0';
                 nouveauxIndices[j]=(*count);
-                printf("count : %d\n", *count);
-                fflush(stdout);
                 (*compteurSTRTAB)++;
+               // printf("%d\n",*compteurSTRTAB);
                 (*count)++;
+
             } else{
                 //// Proble Type Fusioné les Fonctions Quand global ???
 
                 if(symTable2[j]->st_shndx != STN_UNDEF && symTableFin[k]->st_shndx != STN_UNDEF){
+
                     printf("Line 2346 : ERROR : 2 global variables have same name");
                     exit(0);
                 } else if(symTable2[j]->st_shndx != STN_UNDEF && symTableFin[k]->st_shndx == STN_UNDEF){
+                                        printf("?????????????????????????????????????????????????");
+
                     int tmp =symTableFin[k]->st_name;
                     symTableFin[k]=symTable2[j];
                     symTableFin[k]->st_name =tmp;
@@ -257,21 +351,13 @@ void mergeSymAndStr(char* strTab1,char* strTab2,Elf32_Sym ** symTable1,Elf32_Sym
 
             k=0;
         }
-        else{
-            symTableFin[(*count)]=symTable2[j];
-            int l= symTableFin[(*count)]->st_name;
-            symTableFin[(*count)]->st_name=(*compteurSTRTAB);
-            while(strTab2[l]!='\0'){
-                strTabFin[(*compteurSTRTAB)]=strTab2[l];
-                l++;
-                (*compteurSTRTAB)++;
-            }
-            strTabFin[(*compteurSTRTAB)]='\0';
-            nouveauxIndices[j]=(*count);
-            (*compteurSTRTAB)++;
-            (*count)++;
-        }
     }
+   printf("\nstring table 4 :");
+    for(int i = 0; i<(*compteurSTRTAB); i++){
+        printf("%c",strTabFin[i]);
+    }
+     printf("\n");
+    return dernierlocal;
 }
 
 Elf32_Ehdr createElfHeader(Elf32_Shdr ** sheaderFin, Elf32_Ehdr header1, int nombreDeSection){
@@ -342,13 +428,12 @@ int main(int argc, char *argv[]){
     int symt2 = sheader2[symTabNum2]->sh_size/sizeof(Elf32_Sym);
     char * strTabFin = malloc(sheader1[numSec]->sh_size + sheader2[numSec2]->sh_size);
     Elf32_Sym * symTableFin[sheader1[symTabNum]->sh_size/sizeof(Elf32_Sym) + sheader2[symTabNum2]->sh_size/sizeof(Elf32_Sym)];
-    int nbSymboles;
+    int nbSymboles=0;
     int tailleSTRTAB;
     int nouveauxIndices[symt2];
-    mergeSymAndStr(strTab1, strTab2, symTable1, symTable2,  strTabFin, symTableFin, symt1, symt2,&tailleSTRTAB,&nbSymboles, nouveauxIndices);
-    for(int k = 0; k < symt2;k++){
-        printf("%d : %d\n", k, nouveauxIndices[k]);
-    }
+    int indicesFich1[symt1];
+    int lastLocalSym = mergeSymAndStr(strTab1, strTab2, symTable1, symTable2,  strTabFin, symTableFin, symt1, symt2,&tailleSTRTAB,&nbSymboles, nouveauxIndices,indicesFich1);
+
     //Fusion des sections
     
     int compteurRel=nombre_reloc(*header2,sheader2);
@@ -356,10 +441,15 @@ int main(int argc, char *argv[]){
 
  	getRelTable(src2,*header2,sheader2,symTable2,strTab2,compteurRel,relTable );
 
+    int compteurRel1=nombre_reloc(*header1,sheader1);
+	reloc *relTable1[compteurRel1];
+
+ 	getRelTable(src1,*header1,sheader1,symTable1,strTab1,compteurRel1,relTable1);
+
 
     Elf32_Shdr * sheaderFinTmp[header1->e_shnum + header2->e_shnum];
     
-    int nombreDeSection=mergeSheader(sheader1, *header1, sheader2, *header2, sheaderFinTmp,nbSymboles,tailleSTRTAB, symTableFin, strTabFin, dest, src1, src2, strTabSection1, strTabSection2, nouveauxIndices ,relTable,compteurRel);
+    int nombreDeSection=mergeSheader(sheader1, *header1, sheader2, *header2, sheaderFinTmp,nbSymboles,tailleSTRTAB, symTableFin, strTabFin, dest, src1, src2, strTabSection1, strTabSection2, nouveauxIndices ,relTable,compteurRel, indicesFich1 ,relTable1, compteurRel1, lastLocalSym);
     // printf("ca_sort\n");
     fflush(stdout);
     Elf32_Shdr * sheaderFin[nombreDeSection];
@@ -376,7 +466,6 @@ int main(int argc, char *argv[]){
     fseek(dest,0,SEEK_END);
     // printf("pos fin sheader : %ld\n",ftell(dest));
     // printf("taille : %ld",sizeof(Elf32_Shdr));
-    
 
     ////////////
     fclose(src1);

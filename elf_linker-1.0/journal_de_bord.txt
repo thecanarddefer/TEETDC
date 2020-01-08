@@ -39,3 +39,6 @@ Division du groupe en 2 sous-groupes:
 -amélioration de la partie 5 & documentation de code
 -partie 8 en cours
 mise en commun de ces deux parties pour finir la partie 8
+
+bug symboles : le st_info de la symtab doit correspondre au dernier symbole local ;
+on a mis le st_info egal au nombre de symbole mais il y a des symboles globaux avant des locaux
