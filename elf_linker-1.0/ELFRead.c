@@ -29,11 +29,13 @@ int main(int argc, char *argv[]){
 		printf(" /// HEADER ELF /// \n");
 		printf("\n");
 		header = elf_read_entete(src);//création du header
-		Elf32_Shdr *sheader[header->e_shnum];//création du sheader
+		afficherheaderELF(header);//affichage du header
 		printf("\n");
 		printf(" /// section HEADER TABLE /// \n");
 		printf("\n");
-		lectureTableSectionHeader(src,*header,sheader);//remplissage et affichage du sheader
+		Elf32_Shdr *sheader[header->e_shnum];//création du sheader
+		lectureTableSectionHeader(src,*header,sheader);//remplissage  du sheader
+		printTableSection(src,*header,sheader);//affichage du sheader
 		printf("\n");
 		printf(" /// section ELF /// \n");
 		printf("\n");
@@ -48,13 +50,15 @@ int main(int argc, char *argv[]){
 			int numSec = findStrTabSym(sheader,*header);//l'indice de la table des nom de symbole
 			char* strTab = createStrTab(sheader, src, numSec);//crée la table des noms de symbole
 			Elf32_Sym * STable[sheader[symTabNum]->sh_size/sizeof(Elf32_Sym)];//création de la table des symbole
-			readSymTab(src, sheader, symTabNum, STable, strTab);//lis et affiche la table des symbole
+			readSymTab(src, sheader, symTabNum, STable, strTab);//lis la table des symbole
+			afficherTabSymb(STable,sheader,symTabNum,strTab);//affiche la table des symbole
 			printf("\n");
 			printf(" /// Affichage des relocation /// \n");
 			printf("\n");
 			int compteurRel=nombre_reloc(*header,sheader);//le nombre de section de relocation
 			reloc *relTable[compteurRel];
 			getRelTable(src,*header,sheader,STable,strTab,compteurRel,relTable );//crée le tableau des tables de relocation et les affiche
+			affiche_toute_reloc(src,relTable,*header,sheader,STable,strTab,compteurRel);
 			freeReloc (relTable,compteurRel);//libère les tables de relocation
 			freeSymTab(STable,sheader,symTabNum);//libère la table des symbole
 		}

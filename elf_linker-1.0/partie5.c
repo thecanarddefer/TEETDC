@@ -123,21 +123,26 @@ void info_reloc (Elf32_Ehdr header,Elf32_Shdr ** sheader,reloc ** relTable,FILE 
 }
 
 void affiche_toute_reloc(FILE * fp,reloc ** relTable, Elf32_Ehdr header, Elf32_Shdr **sheader,Elf32_Sym ** STable,char * strTab,int compteurRel){
-	for(int l=0;l<compteurRel;l++){//boucle sur les tables de relocation
-		printf(" \n");//affiche les information sur la table de relocation
-		printf(" Section de réadressage '");
-		char* strTabSection = createStrTab(sheader, fp, header.e_shstrndx);
-		int j = sheader[relTable[l]->ind_sect]->sh_name;
-		while(strTabSection[j] != '\0'){ // affiche le nom de la section de relocation
-			printf("%c", strTabSection[j]);
-			j++;
-		}
-		printf("' à l'adresse de décalage 0x%x contient %d entrées:",sheader[relTable[l]->ind_sect]->sh_offset,relTable[l]->nbreloc);
-		printf(" \n");
-
-		afficherRelTables(relTable[l],header,sheader,STable,strTab,fp);//affiche les info sur les relocations
+	if (compteurRel==0 ){//s'il n'y a pas de relocation
+		printf("Il n'y a pas de réadressage dans ce fichier.\n");
 	}
-	printf(" \n");
+	else {
+		for(int l=0;l<compteurRel;l++){//boucle sur les tables de relocation
+			printf(" \n");//affiche les information sur la table de relocation
+			printf(" Section de réadressage '");
+			char* strTabSection = createStrTab(sheader, fp, header.e_shstrndx);
+			int j = sheader[relTable[l]->ind_sect]->sh_name;
+			while(strTabSection[j] != '\0'){ // affiche le nom de la section de relocation
+				printf("%c", strTabSection[j]);
+				j++;
+			}
+			printf("' à l'adresse de décalage 0x%x contient %d entrées:",sheader[relTable[l]->ind_sect]->sh_offset,relTable[l]->nbreloc);
+			printf(" \n");
+
+			afficherRelTables(relTable[l],header,sheader,STable,strTab,fp);//affiche les info sur les relocations
+		}
+		printf(" \n");
+	}
 }
 
 void getRelTable (FILE * fp, Elf32_Ehdr header, Elf32_Shdr ** sheader,Elf32_Sym ** STable,char * strTab,int compteurRel, reloc ** relTable){
@@ -147,26 +152,23 @@ void getRelTable (FILE * fp, Elf32_Ehdr header, Elf32_Shdr ** sheader,Elf32_Sym 
    	for(int i=0;i<compteurRel;i++){
             		relTable[i] = (reloc *)malloc(sizeof(reloc));
     	}
-	if (compteurRel==0 ){//s'il n'y a pas de relocation
-		printf("Il n'y a pas de réadressage dans ce fichier.\n");
-	}
 	
 	// lecture des relocation
-	else { 
-		info_reloc(header,sheader,relTable,fp);
-	    	for(int l=0;l<compteurRel;l++){//boucle sur les table de relocation
-			
-        		fseek(fp,sheader[relTable[l]->ind_sect]->sh_offset,SEEK_SET);
-			
-        		for (int j=0; j<(relTable[l]->nbreloc);j++){ // lit les relocations
-				relTable[l]->tab[j]=malloc(sizeof(Elf32_Rel));
-            			fread(relTable[l]->tab[j], 1,sizeof(Elf32_Rel),fp);
-            		}
-			
-		      
-	    	}
-		affiche_toute_reloc(fp,relTable,header,sheader,STable,strTab,compteurRel);
-	}	
+	
+	info_reloc(header,sheader,relTable,fp);
+    	for(int l=0;l<compteurRel;l++){//boucle sur les table de relocation
+		
+		fseek(fp,sheader[relTable[l]->ind_sect]->sh_offset,SEEK_SET);
+		
+		for (int j=0; j<(relTable[l]->nbreloc);j++){ // lit les relocations
+			relTable[l]->tab[j]=malloc(sizeof(Elf32_Rel));
+    			fread(relTable[l]->tab[j], 1,sizeof(Elf32_Rel),fp);
+    		}
+		
+	      
+    	}
+	
+		
 	
 }
 void freeReloc (reloc ** relTable, int compteurRel){

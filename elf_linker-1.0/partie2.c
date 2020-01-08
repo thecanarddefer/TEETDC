@@ -68,7 +68,6 @@ void lectureTableSectionHeader(FILE * fp, Elf32_Ehdr header, Elf32_Shdr ** shead
         sheader[i]=(Elf32_Shdr*)malloc(sizeof(Elf32_Shdr));// alloue l'espace pour l'entete de section
         fread(sheader[i],1, sizeof(Elf32_Shdr), fp);// lit l'entete de section
     }
-	printTableSection(fp,header,sheader);
     return ;
 }
 void freeSHDR(Elf32_Shdr ** sheader){

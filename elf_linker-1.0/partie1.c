@@ -164,7 +164,6 @@ void afficherheaderELF(Elf32_Ehdr * header){ //affiche le header ELF
 Elf32_Ehdr * elf_read_entete(FILE * src){
   	Elf32_Ehdr * header = malloc(sizeof(Elf32_Ehdr));// allocation du header
   	fread(header,1, sizeof(Elf32_Ehdr), src); // lecture du header
-  	afficherheaderELF(header);
   	return header;
 }
 

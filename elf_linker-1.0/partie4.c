@@ -111,7 +111,6 @@ void readSymTab(FILE * fp, Elf32_Shdr** sheader, int symTabNum,Elf32_Sym ** STab
         	STable[i]=(Elf32_Sym*)malloc(sizeof(Elf32_Sym));// alloue l'espace du symbole
         	fread(STable[i],1, sizeof(Elf32_Sym), fp);// lit le symbole
     	}
-	afficherTabSymb(STable,sheader,symTabNum,strTab);
 }
 
 void freeSymTab(Elf32_Sym ** STable,Elf32_Shdr** sheader,int symTabNum){
