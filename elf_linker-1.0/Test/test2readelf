@@ -1,0 +1,19 @@
+Il y a 10 en-têtes de section, débutant à l'adresse de décalage 0x2c4:
+
+En-têtes de section :
+  [Nr] Nom               Type            Adr      Décala.Taille ES Fan LN Inf Al
+  [ 0]                   NULL            00000000 000000 000000 00      0   0  0
+  [ 1] .text             PROGBITS        00000000 000034 00003c 00  AX  0   0  4
+  [ 2] .rel.text         REL             00000000 0001e0 000050 08   I  8   1  4
+  [ 3] .data             PROGBITS        00000000 000070 00003c 00  WA  0   0  4
+  [ 4] .rel.data         REL             00000000 000230 000050 08   I  8   3  4
+  [ 5] .bss              NOBITS          00000000 0000ac 000000 00  WA  0   0  1
+  [ 6] .ARM.attributes   ARM_ATTRIBUTES  00000000 0000ac 000014 00      0   0  1
+  [ 7] .shstrtab         STRTAB          00000000 000280 000044 00      0   0  1
+  [ 8] .symtab           SYMTAB          00000000 0000c0 0000f0 10      9  13  4
+  [ 9] .strtab           STRTAB          00000000 0001b0 00002d 00      0   0  1
+Clé des fanions :
+  W (écriture), A (allocation), X (exécution), M (fusion), S (chaînes), I (info),
+  L (ordre des liens), O (traitement supplémentaire par l'OS requis), G (groupe),
+  T (TLS), C (compressé), x (inconnu), o (spécifique à l'OS), E (exclu),
+  y (purecode), p (processor specific)

@@ -8,5 +8,6 @@ int main(int argc,char * argv[]){
   	FILE * src = fopen(argv[1], "r");
     Elf32_Ehdr * header;
     header = elf_read_entete(src);
+    afficherheaderELF(header);
     freeHeader(header);
 }

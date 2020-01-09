@@ -1,2 +1,10 @@
-install:
-  - echo "pas encore de test"
+language: c
+sudo: false # only for faster builds
+script:
+  - cd elf_liker1.0/
+  - make
+  - cd Test/
+  - make
+  - ./allTest.sh
+after_success:
+  - bash <(curl -s https://codecov.io/bash)

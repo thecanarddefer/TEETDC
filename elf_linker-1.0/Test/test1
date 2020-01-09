@@ -7,11 +7,11 @@ Type : 				 REL (Fichier de réadressage)
 Machine: 					 ARM
 Adresse du point d'entrée : 			 0x0
 Début des en-têtes de programme : 0 (octets dans le fichier) 
-Début des en-têtes de section : 			 596 (octets dans le fichier)
+Début des en-têtes de section : 			 708 (octets dans le fichier)
 Fanions: 					 0x5000000 ,Version5 EABI
 Taille de cet en-tête : 				 52 (octets)
 Taille de l'en-tête du programme: 		 0 (octets)
 Nombre d'en-tête du programme:		 0
 Taille des en-têtes de section: 		 40 (octets)
-Nombre d'en-têtes de section: 			 11
-Table d'indexes des chaînes d'en-tête de section:8
+Nombre d'en-têtes de section: 			 10
+Table d'indexes des chaînes d'en-tête de section:7
